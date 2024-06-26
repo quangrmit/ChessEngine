@@ -1,13 +1,11 @@
-import { useState } from "react";
-
-import { Chessboard } from "react-chessboard";
+import Home from "./pages/Home";
 
 function App() {
-    return (
-        <div>
-            <Chessboard id="BasicBoard" />
-        </div>
-    );
+  return (
+    <Home></Home>
+  )
 }
+
+
 
 export default App;
