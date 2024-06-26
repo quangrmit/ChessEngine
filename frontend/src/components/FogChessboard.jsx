@@ -4,8 +4,6 @@ import Clock from "./Clock";
 import React from "react";
 import { useState } from "react";
 
-// export const takeTurnContext = React.createContext();
-
 function FogChessboard() {
     const [fen, setFen] = useState("start");
     const [game, setGame] = useState(new Chess());
@@ -49,7 +47,7 @@ function FogChessboard() {
         <>
             <div id="containerBoard">
                 <Clock isWhite={false} ticking={!isWhiteTurn}/>
-                    <Chessboard position={fen} onPieceDrop={onDrop} />;
+                    <Chessboard position={fen} onPieceDrop={onDrop} />
                 <Clock isWhite={true} ticking={isWhiteTurn}/>
             </div>
         </>

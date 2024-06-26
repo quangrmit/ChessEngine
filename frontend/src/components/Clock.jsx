@@ -9,34 +9,33 @@ function formatTime(number) {
     }
 }
 
-
-function Clock({ isWhite,  ticking}) {
+function Clock({ isWhite, ticking }) {
     let numberColor = isWhite ? "black" : "white";
 
-    let clockBackground = isWhite ? "white" : "black";
+    let clockMainBackground = isWhite ? "white" : "black";
+
+    let clockSubBackground = isWhite ? "#a3a0a0" : "#615f5f";
 
     let clockStyle = {
         color: numberColor,
-        backgroundColor: clockBackground,
+        backgroundColor: ticking ? clockMainBackground : clockSubBackground,
     };
 
     const time = new Date();
     time.setSeconds(time.getSeconds() + 600); // 10 minutes timer
 
-    const expiryTimestamp = time
+    const expiryTimestamp = time;
 
     const { totalSeconds, seconds, minutes, hours, days, isRunning, start, pause, resume, restart } =
-    useTimer({ expiryTimestamp, onExpire: () => console.warn("onExpire called") });
+        useTimer({ expiryTimestamp, onExpire: () => console.warn("onExpire called") });
 
     useEffect(() => {
         if (!ticking) {
-            pause()
-        }else{
-            resume()
+            pause();
+        } else {
+            resume();
         }
-    }, [ticking])
-
-
+    }, [ticking]);
 
     return (
         <div className="clock-container">
