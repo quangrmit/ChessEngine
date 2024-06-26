@@ -1,11 +1,15 @@
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
-
+import React from "react";
 import { useState } from "react";
+
+// export const takeTurnContext = React.createContext();
+
 function FogChessboard() {
     const [fen, setFen] = useState("start");
     const [game, setGame] = useState(new Chess());
+    const [isWhiteTurn, setIsWhiteTurn] = useState(true);
 
     function makeAMove(move) {
         try {
@@ -35,15 +39,18 @@ function FogChessboard() {
         if (move === null) return false;
         setFen(game.fen());
         //   setTimeout(makeRandomMove, 200);
+        // switch clock
+        setIsWhiteTurn(prev => !prev)
+
         return true;
     }
 
     return (
         <>
             <div id="containerBoard">
-                <Clock isWhite={false}/>
-                <Chessboard position={fen} onPieceDrop={onDrop} />;
-                <Clock isWhite={true}/>
+                <Clock isWhite={false} ticking={!isWhiteTurn}/>
+                    <Chessboard position={fen} onPieceDrop={onDrop} />;
+                <Clock isWhite={true} ticking={isWhiteTurn}/>
             </div>
         </>
     );

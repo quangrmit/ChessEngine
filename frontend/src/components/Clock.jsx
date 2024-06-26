@@ -10,7 +10,7 @@ function formatTime(number) {
 }
 
 
-function Clock({ isWhite }) {
+function Clock({ isWhite,  ticking}) {
     let numberColor = isWhite ? "black" : "white";
 
     let clockBackground = isWhite ? "white" : "black";
@@ -28,12 +28,22 @@ function Clock({ isWhite }) {
     const { totalSeconds, seconds, minutes, hours, days, isRunning, start, pause, resume, restart } =
     useTimer({ expiryTimestamp, onExpire: () => console.warn("onExpire called") });
 
+    useEffect(() => {
+        if (!ticking) {
+            pause()
+        }else{
+            resume()
+        }
+    }, [ticking])
+
+
+
     return (
         <div className="clock-container">
             <div className="clock" style={clockStyle}>
-            <div>
-                <span>{formatTime(minutes)}</span>:<span>{formatTime(seconds)}</span>
-            </div>
+                <div>
+                    <span>{formatTime(minutes)}</span>:<span>{formatTime(seconds)}</span>
+                </div>
             </div>
         </div>
     );
