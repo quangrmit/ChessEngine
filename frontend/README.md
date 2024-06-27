@@ -4,6 +4,7 @@
 - Add fog mask / toggle fog mask button
 - Move history
 - Highlight all possible moves a piece can make
+- Click-click move mechanism
 - Allow to not be forced to move out of check
 
 # Quality of life (Optional)
