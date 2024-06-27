@@ -1,5 +1,7 @@
 import Chess from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
+import Clock from "./Clock";
+import React from "react";
 import WinDialog from "./WinDialog";
 
 import { useState } from "react";
@@ -7,6 +9,7 @@ import { useState } from "react";
 function FogChessboard() {
     const [fen, setFen] = useState("start");
     const [game, setGame] = useState(new Chess());
+    const [isWhiteTurn, setIsWhiteTurn] = useState(true);
     const [open, setOpen] = useState(false)
     const [message, setMessage] = useState("")
     const [moveCount, setMoveCount] = useState(0)
@@ -47,6 +50,7 @@ function FogChessboard() {
       // legal move
       setFen(game.fen());
       setMoveCount(moveCount+1)
+      setIsWhiteTurn(prev => !prev) // switch clock
 
       // Check if the King has been captured for restarting the game
       let gameState = game.fen().split(" ")[0]
@@ -67,10 +71,10 @@ function FogChessboard() {
     return <>
         <WinDialog open={open} resetGame={resetGame} cancleGame={cancelGame} message={message} ></WinDialog>
         <div id = "containerBoard">
-            <Chessboard position={fen} onPieceDrop={onDrop}/>;
+            <Clock isWhite={false} ticking={!isWhiteTurn}/>
+                <Chessboard position={fen} onPieceDrop={onDrop}/>;
+            <Clock isWhite={true} ticking={isWhiteTurn}/>
         </div>
     </>
     
 };
-
-export default FogChessboard
