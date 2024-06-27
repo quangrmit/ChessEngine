@@ -12,4 +12,4 @@
 
 # Reference (Copyright software)
 
-- The Chess.js modules file is based on the official Chess.js <a href="https://github.com/jhlywa/chess.js"> Github Repository</a> owned by user <a href="https://github.com/jhlywa"> jhlywa </a>. All rights are reserved.
+- The Chess.js modules file is based on the official Chess.js <a href="https://github.com/jhlywa/chess.js"> Github Repository</a> owned by user <a href="https://github.com/jhlywa"> jhlywa </a>. All rights reserved.

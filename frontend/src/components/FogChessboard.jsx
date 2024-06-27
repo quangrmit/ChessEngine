@@ -6,7 +6,7 @@ import WinDialog from "./WinDialog";
 
 import { useState } from "react";
 
-function FogChessboard() {
+export default function FogChessboard() {
     const [fen, setFen] = useState("start");
     const [game, setGame] = useState(new Chess());
     const [isWhiteTurn, setIsWhiteTurn] = useState(true);
