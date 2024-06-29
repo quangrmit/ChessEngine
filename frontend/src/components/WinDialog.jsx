@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
+import { Dialog, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
 
 function WinDialog({ open, resetGame, cancleGame, message }) {
     return <>
@@ -6,9 +6,6 @@ function WinDialog({ open, resetGame, cancleGame, message }) {
         open={open}
         onClose={resetGame}
       >
-        {/* <DialogTitle>
-            
-        </DialogTitle> */}
         <DialogContent>
           <DialogContentText>
             {message}
@@ -16,9 +13,7 @@ function WinDialog({ open, resetGame, cancleGame, message }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={resetGame}>Restart Game</Button>
-          {/* <Button onClick={cancleGame} autoFocus>
-            Cancel
-          </Button> */}
+          <Button onClick={cancleGame} autoFocus>Cancel</Button>
         </DialogActions>
       </Dialog>
     </>
