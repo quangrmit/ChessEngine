@@ -158,6 +158,7 @@ export default function FogChessboard() {
                 ;
                 <Clock isWhite={true} ticking={isWhiteTurn} />
             </div>
+            <Sidebar resetGame={resetGame} stepPlaybackMove={stepPlaybackMove}></Sidebar>
         </>
     );
 }
