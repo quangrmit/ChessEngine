@@ -17,7 +17,6 @@ export default function FogChessboard() {
     const [moveFrom, setMoveFrom] = useState(null);
     const [optionSquares, setOptionSquares] = useState({});
 
-
     // Manage win dialog state
     const resetGame = () => {
         setOpen(false);
@@ -100,24 +99,23 @@ export default function FogChessboard() {
         return true;
     }
 
-    function onSquareClick(square, piece) {        
-        if (piece !== undefined){
+    function onSquareClick(square, piece) {
+        if (piece !== undefined) {
             // 'w' or 'b'
-            let side = piece.slice(0,1)
+            let side = piece.slice(0, 1);
 
             // if same color piece as current player turn
-            if ((side === 'w' && isWhiteTurn) || (side === 'b' && !isWhiteTurn)){
+            if ((side === "w" && isWhiteTurn) || (side === "b" && !isWhiteTurn)) {
                 const hasMoveOptions = getMoveOptions(square);
                 if (hasMoveOptions) setMoveFrom(square);
-                return ;
+                return;
             }
         }
 
-        onDrop(moveFrom, square)
-        setMoveFrom(null)
-        setOptionSquares({})
-        
-    }   
+        onDrop(moveFrom, square);
+        setMoveFrom(null);
+        setOptionSquares({});
+    }
 
     return (
         <>
@@ -134,7 +132,7 @@ export default function FogChessboard() {
                     onPieceDrop={onDrop}
                     onSquareClick={onSquareClick}
                     customSquareStyles={{
-                        ...optionSquares
+                        ...optionSquares,
                     }}
                 />
                 ;
