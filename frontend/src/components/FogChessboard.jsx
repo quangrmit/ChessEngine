@@ -1,11 +1,9 @@
 import Chess from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import WinDialog from "./WinDialog";
 import Sidebar from "./Sidebar";
-
-import { useState } from "react";
 
 export default function FogChessboard() {
     const [fen, setFen] = useState("start");
@@ -20,6 +18,21 @@ export default function FogChessboard() {
     const [moveFrom, setMoveFrom] = useState(null);
     const [optionSquares, setOptionSquares] = useState({});
     
+    // Call the AI every black's turn
+    useEffect(() => {
+        const engineMove = async () => {
+            const url = "http://127.0.0.1:5501/api/engine"
+            let response = await fetch(`${url}?fen=${game.fen()}`);
+            response = await response.json()
+            console.log(response);
+            onDrop(response.from, response.to);
+        }
+        if (!isWhiteTurn) {
+            console.log("Black turn !!!");
+            engineMove();
+        }
+    }, [isWhiteTurn])
+
     // Manage win dialog state
     const resetGame = () => {
         setOpen(false)
@@ -61,12 +74,13 @@ export default function FogChessboard() {
             return result;
         } catch (e) {
             // console.log(e) // Information of incorrect move
-            console.log("No more move");
+            console.log("Invalid move");
             return null;
         }  
     }
 
     function onDrop(sourceSquare, targetSquare) {
+
       const move = makeAMove({
         from: sourceSquare,
         to: targetSquare,
