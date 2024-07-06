@@ -1,5 +1,5 @@
 import Chess from "../modules/Chess";
-import SQUARES from '../modules/Chess'
+import SQUARES from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
 import React, { act, useEffect } from "react";
@@ -15,19 +15,21 @@ export default function FogChessboard() {
     const [fen, setFen] = useState("start");
     const [game, setGame] = useState(new Chess());
     const [isWhiteTurn, setIsWhiteTurn] = useState(true);
-    const [open, setOpen] = useState(false)
-    const [message, setMessage] = useState("")
-    const [moveCount, setMoveCount] = useState(0)
-    const [controlGame, setControlGame] = useState(true)
-    const [playBack, setPlayBack] = useState(false)
-    const [currentPlayBackIndex, setCurrentPlayBackIndex] = useState(0)
+    const [open, setOpen] = useState(false);
+    const [message, setMessage] = useState("");
+    const [moveCount, setMoveCount] = useState(0);
+    const [controlGame, setControlGame] = useState(true);
+    const [playBack, setPlayBack] = useState(false);
+    const [currentPlayBackIndex, setCurrentPlayBackIndex] = useState(0);
     const [moveFrom, setMoveFrom] = useState(null);
     const [optionSquares, setOptionSquares] = useState({});
+    // prettier-ignore
     const [whitePieceSquares, setWhitePieceSquare] = useState( new Set([
                 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
         'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'
     ]))
 
+    // prettier-ignore
     const allSquares = [
         'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8',
         'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7',
@@ -39,116 +41,94 @@ export default function FogChessboard() {
         'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'
     ];
 
-
-
     const genPossibleMoves = (currGame, wpsArray) => {
-        console.log('this is wps array')
-        console.log(wpsArray)
-        const allMoves = []
+        const allMoves = [];
 
-        for (let i = 0; i < wpsArray.length; i++){
-            let square = wpsArray[i]
+        for (let i = 0; i < wpsArray.length; i++) {
+            let square = wpsArray[i];
             const moves = currGame.moves({
                 square,
-                verbose: true
-            })
+                verbose: true,
+            });
 
-            for (let j = 0; j < moves.length; j ++){
-                moves[j] = moves[j].to
+            for (let j = 0; j < moves.length; j++) {
+                moves[j] = moves[j].to;
             }
-            allMoves.push(...moves)
+            allMoves.push(...moves);
         }
-        return new Set(allMoves)
-    }   
+        return new Set(allMoves);
+    };
 
+    const genMovesFromOppTurn = (currGame, wpsArray) => {
+        let fenCopy = currGame.fen();
+        fenCopy = fenCopy.replace("b ", "w ");
+        let gameSame = new Chess(fenCopy);
 
-    let [possibleMovesSquares, setPossibleMovesSquares] = useState([])
+        return genPossibleMoves(gameSame, Array.from(wpsArray));
+    };
 
-    const possibleMovesSquaresWhiteTurn = genPossibleMoves(game, Array.from(whitePieceSquares))
-    console.log(possibleMovesSquaresWhiteTurn)
+    const possibleMovesSquaresWhiteTurn = genPossibleMoves(game, Array.from(whitePieceSquares));
 
-    let possibleMovesSquaresBlackTurn = new Set()
+    let [possibleMovesSquares, setPossibleMovesSquares] = useState(Array.from(possibleMovesSquaresWhiteTurn));
 
+    function fog(fqs) {
+        const newSquares = {};
 
-    useEffect(() => {
-
-        // If it is white's turn 
-        if (isWhiteTurn) {
-            setPossibleMovesSquares(Array.from(possibleMovesSquaresWhiteTurn))
-            return ;
-        }
-
-        let fenCopy = game.fen()
-
-        fenCopy = fenCopy.replace('b ', 'w ')
-        
-        let gameSame = new Chess(fenCopy)
-
-        possibleMovesSquaresBlackTurn = genPossibleMoves(gameSame, Array.from( whitePieceSquares))
-        setPossibleMovesSquares(Array.from(possibleMovesSquaresBlackTurn))
-
-    }, [isWhiteTurn])
-    
-        const fogSquares = Array.from((new Set(allSquares)).difference(new Set([...possibleMovesSquares, ...whitePieceSquares])))
-
-    useEffect(() => {
-        console.log('this is possible moves squares')
-        console.log(possibleMovesSquares)
-        console.log('this is fog')
-        console.log(fogSquares)
-
-        fog()
-        
-    }, [possibleMovesSquares])
-
-
-
-
-
-    function fog() {
-
-        // data-square-color: white
-        // 
-
-
-        const newSquares = {}
-
-        fogSquares.map((square) => {
+        fqs.map((square) => {
             newSquares[square] = {
-                background: 'grey',
-
-                // game.get(square) && game.get(square).color !== game.get(square).color
-                //     ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
-                //     : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
-            // borderRadius: "50%",
+                background: "grey",
             };
-            
-        })
+        });
 
-        console.log(newSquares)
-        setOptionSquares(newSquares)
-
+        return newSquares;
     }
 
+    const fogSquares = Array.from(
+        new Set(allSquares).difference(new Set([...possibleMovesSquares, ...whitePieceSquares]))
+    );
+
+    useEffect(() => {
+        // If it is white's turn
+        if (isWhiteTurn) {
+            setPossibleMovesSquares(Array.from(possibleMovesSquaresWhiteTurn));
+            return;
+        }
+
+        setPossibleMovesSquares(Array.from(genMovesFromOppTurn(game, Array.from(whitePieceSquares))));
+    }, [isWhiteTurn]);
+
+    useEffect(() => {
+        setOptionSquares(fog(fogSquares));
+        console.log(fogSquares);
+        console.log(possibleMovesSquares);
+        console.log(whitePieceSquares);
+    }, [possibleMovesSquares]);
+
+    useEffect(() => {
+        // setOptionSquares(fogSquaresCssObj);
+        setOptionSquares(fog(fogSquares));
+    }, []);
+
+    // Current problem:
 
     // Manage win dialog state
     const resetGame = () => {
-        setOpen(false)
-        setControlGame(true)
-        setMoveCount(0)
-        game.reset()
-        setFen(game.fen())
-    }
+        setOpen(false);
+        setControlGame(true);
+        setMoveCount(0);
+        game.reset();
+        setFen(game.fen());
+    };
 
     const cancelGame = () => {
-        setOpen(false)
-    }
+        setOpen(false);
+    };
 
     // Step through moves of a recorded game
     const stepPlaybackMove = () => {
         if (currentPlayBackIndex === preMoveList.length) {
             setCurrentPlayBackIndex(0);
-            setFen(game.reset())
+            setFen(game.reset());
             return;
         }
         let currentMove = preMoveList[currentPlayBackIndex];
@@ -156,67 +136,72 @@ export default function FogChessboard() {
         let toPos = currentMove.substring(currentMove.length - 2);
         makeAMove({
             from: fromPos,
-            to: toPos
-        })
+            to: toPos,
+        });
         setFen(game.fen());
         setCurrentPlayBackIndex(currentPlayBackIndex + 1);
+    };
 
-    }    
-    
     function makeAMove(move) {
         // if (!controlGame) return null;
         try {
-            const result = game.move(move)
-            console.log(result);
+            const result = game.move(move);
             // recordMoveList(result);
             return result;
         } catch (e) {
             // console.log(e) // Information of incorrect move
             console.log("No more move");
             return null;
-        }  
+        }
     }
 
     function onDrop(sourceSquare, targetSquare) {
-      const move = makeAMove({
-        from: sourceSquare,
-        to: targetSquare,
-      });
+        const move = makeAMove({
+            from: sourceSquare,
+            to: targetSquare,
+        });
 
-      
-      // illegal move
-      if (move === null) return false;
-      
-      // legal move
-      setFen(game.fen());
-      setMoveCount(moveCount + 1);
-      setIsWhiteTurn((prev) => !prev); // switch clock
-      
-      // Everytime make a move set white piece squares to new value
-      let newWhitePieceSquares = new Set(whitePieceSquares)
-      newWhitePieceSquares.delete(sourceSquare)
-      newWhitePieceSquares.add(targetSquare)
-      setWhitePieceSquare(newWhitePieceSquares)
+        // illegal move
+        if (move === null) return false;
 
-      // Check if a king has been captured
-      if (!move.captured) return true;
-      if (move.captured !== 'k') return true;
-      if (move.color === 'b') setMessage(`Black win in ${moveCount} moves`)
-      else setMessage(`White win in ${moveCount} moves`)
-      setOpen(true)
-      setControlGame(false)  
-      return true;
+        // legal move
+
+        // Everytime make a move set white piece squares to new value
+        if (isWhiteTurn) {
+            let newWhitePieceSquares = new Set(whitePieceSquares);
+            newWhitePieceSquares.delete(sourceSquare);
+            newWhitePieceSquares.add(targetSquare);
+            setWhitePieceSquare(newWhitePieceSquares);
+        }else {
+            if (whitePieceSquares.has(targetSquare)) {
+                let newWhitePieceSquares = new Set(whitePieceSquares)
+                newWhitePieceSquares.delete(targetSquare)
+                setWhitePieceSquare(newWhitePieceSquares)
+            }
+        }
+
+        setFen(game.fen());
+        setMoveCount(moveCount + 1);
+        setIsWhiteTurn((prev) => !prev); // switch clock
+
+        // Check if a king has been captured
+        if (!move.captured) return true;
+        if (move.captured !== "k") return true;
+        if (move.color === "b") setMessage(`Black win in ${moveCount} moves`);
+        else setMessage(`White win in ${moveCount} moves`);
+        setOpen(true);
+        setControlGame(false);
+        return true;
     }
 
     function getMoveOptions(square) {
-        console.log(square)
         const moves = game.moves({
             square,
             verbose: true,
         });
-        console.log(moves);
         if (moves.length === 0) {
-            setOptionSquares({});
+            // setOptionSquares(fogSquaresCssObj);
+            // setOptionSquares({})
             return false;
         }
 
@@ -234,7 +219,8 @@ export default function FogChessboard() {
         newSquares[square] = {
             background: "rgba(255, 255, 0, 0.4)",
         };
-        setOptionSquares(newSquares);
+        // setOptionSquares(newSquares);
+        // setOptionSquares(fogSquaresCssObj)
         return true;
     }
 
@@ -253,7 +239,7 @@ export default function FogChessboard() {
 
         onDrop(moveFrom, square);
         setMoveFrom(null);
-        setOptionSquares({});
+        // setOptionSquares({});
     }
 
     return (
