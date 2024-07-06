@@ -2,13 +2,14 @@ import Chess from "../modules/Chess";
 import SQUARES from '../modules/Chess'
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
-import React, { useEffect } from "react";
+import React, { act, useEffect } from "react";
 import WinDialog from "./WinDialog";
 import Sidebar from "./Sidebar";
 
 import { useState } from "react";
 import { useStepContext } from "@mui/material";
 import FocusTrap from "@mui/material/Unstable_TrapFocus";
+import zIndex from "@mui/material/styles/zIndex";
 
 export default function FogChessboard() {
     const [fen, setFen] = useState("start");
@@ -27,34 +28,6 @@ export default function FogChessboard() {
         'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'
     ]))
 
-    // Current problem: cannot generate possible moves if not in the correct turn
-    // TODO: solve
-
-
-    const genPossibleMoves = (wpsArray) => {
-        console.log('this is wps array')
-        console.log(wpsArray)
-        const allMoves = []
-
-        for (let i = 0; i < wpsArray.length; i++){
-            let square = wpsArray[i]
-            const moves = game.moves({
-                square,
-                verbose: true
-            })
-
-            for (let j = 0; j < moves.length; j ++){
-                moves[j] = moves[j].to
-            }
-            allMoves.push(...moves)
-        }
-        return new Set(allMoves)
-    }   
-
-
-    const possibleMovesSquares = genPossibleMoves(Array.from(whitePieceSquares))
-    console.log(possibleMovesSquares)
-
     const allSquares = [
         'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8',
         'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7',
@@ -68,74 +41,95 @@ export default function FogChessboard() {
 
 
 
-
-    const fogSquares = Array.from((new Set(allSquares)).difference(new Set([...possibleMovesSquares, ...whitePieceSquares])))
-
-    useEffect(() => {
-        console.log('This is fog square')
-        console.log(fogSquares)
-
-        console.log('this is white piece squares')
-        console.log(whitePieceSquares)
-
-        console.log('this is possible moves squares')
-        console.log(possibleMovesSquares)
-
-    }, [fogSquares])
-
-
-    function test() {
-
-        // Have white piece squares
-        // Have possible moves
-
-
-
+    const genPossibleMoves = (currGame, wpsArray) => {
+        console.log('this is wps array')
+        console.log(wpsArray)
         const allMoves = []
-        for (let i = 0; i < whitePieceSquares.length; i ++){
-            let square = whitePieceSquares[i]
-            const moves = game.moves({
-                square,
-                verbose: true,
-            });
 
+        for (let i = 0; i < wpsArray.length; i++){
+            let square = wpsArray[i]
+            const moves = currGame.moves({
+                square,
+                verbose: true
+            })
+
+            for (let j = 0; j < moves.length; j ++){
+                moves[j] = moves[j].to
+            }
             allMoves.push(...moves)
         }
+        return new Set(allMoves)
+    }   
+
+
+    let [possibleMovesSquares, setPossibleMovesSquares] = useState([])
+
+    const possibleMovesSquaresWhiteTurn = genPossibleMoves(game, Array.from(whitePieceSquares))
+    console.log(possibleMovesSquaresWhiteTurn)
+
+    let possibleMovesSquaresBlackTurn = new Set()
+
+
+    useEffect(() => {
+
+        // If it is white's turn 
+        if (isWhiteTurn) {
+            setPossibleMovesSquares(Array.from(possibleMovesSquaresWhiteTurn))
+            return ;
+        }
+
+        let fenCopy = game.fen()
+
+        fenCopy = fenCopy.replace('b ', 'w ')
+        
+        let gameSame = new Chess(fenCopy)
+
+        possibleMovesSquaresBlackTurn = genPossibleMoves(gameSame, Array.from( whitePieceSquares))
+        setPossibleMovesSquares(Array.from(possibleMovesSquaresBlackTurn))
+
+    }, [isWhiteTurn])
+    
+        const fogSquares = Array.from((new Set(allSquares)).difference(new Set([...possibleMovesSquares, ...whitePieceSquares])))
+
+    useEffect(() => {
+        console.log('this is possible moves squares')
+        console.log(possibleMovesSquares)
+        console.log('this is fog')
+        console.log(fogSquares)
+
+        fog()
+        
+    }, [possibleMovesSquares])
+
+
+
+
+
+    function fog() {
+
+        // data-square-color: white
+        // 
+
 
         const newSquares = {}
 
-        const allMovesSimple = allMoves.map((move) => move.to)
+        fogSquares.map((square) => {
+            newSquares[square] = {
+                background: 'grey',
 
-        // All possible moves square
-        console.log(allMovesSimple)
+                // game.get(square) && game.get(square).color !== game.get(square).color
+                //     ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
+                //     : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
+            // borderRadius: "50%",
+            };
+            
+        })
 
-        // All squares that has white piece
-
-
-        for (let i = 0; i < whitePieceSquares.length; i ++){
-            let square = whitePieceSquares[i]
-            allMoves.map((move) => {
-                newSquares[move.to] = {
-                    background:
-                        game.get(move.to) && game.get(move.to).color !== game.get(square).color
-                            ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
-                            : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
-                    borderRadius: "50%",
-                };
-                return move;
-            });
-
-        }
         console.log(newSquares)
         setOptionSquares(newSquares)
 
     }
 
-
-    useEffect(() => {
-        console.log('changed white piece squares')
-        console.log(whitePieceSquares)
-    }, [whitePieceSquares])
 
     // Manage win dialog state
     const resetGame = () => {
@@ -229,10 +223,10 @@ export default function FogChessboard() {
         const newSquares = {};
         moves.map((move) => {
             newSquares[move.to] = {
-                background:
-                    game.get(move.to) && game.get(move.to).color !== game.get(square).color
-                        ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
-                        : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
+                // background:
+                //     game.get(move.to) && game.get(move.to).color !== game.get(square).color
+                //         ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
+                //         : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
                 borderRadius: "50%",
             };
             return move;
