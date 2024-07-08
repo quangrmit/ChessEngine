@@ -1,10 +1,10 @@
 import Chess from "../modules/Chess";
-import SQUARES from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
 import React, { act, useEffect } from "react";
 import WinDialog from "./WinDialog";
 import Sidebar from "./Sidebar";
+import {defaultPieces} from '../modules/pieces'
 
 import { useState } from "react";
 import { useStepContext } from "@mui/material";
@@ -77,6 +77,8 @@ export default function FogChessboard() {
         fqs.map((square) => {
             newSquares[square] = {
                 background: "grey",
+                // position: 'sticky',
+                zIndex: '-100'
             };
         });
 
@@ -259,6 +261,16 @@ export default function FogChessboard() {
                     customSquareStyles={{
                         ...optionSquares,
                     }}
+                    // customPieces={{
+                    //     bK: ({ }) => <div> </div>,
+                    //     bQ: ({ }) => <div> </div>,
+                    //     bR: ({ }) => <div> </div>,
+                    //     bB: ({ }) => <div> </div>,
+                    //     bN: ({ }) => <div> </div>,
+                    //     bP: ({ }) => <div> </div>,
+                    // }}  
+
+                    // customPieces={defaultPieces}
                 />
                 ;
                 <Clock isWhite={true} ticking={isWhiteTurn} />
