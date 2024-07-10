@@ -1,15 +1,18 @@
 import Chess from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
-import React, { act, useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 import WinDialog from "./WinDialog";
 import Sidebar from "./Sidebar";
 import {defaultPieces} from '../modules/pieces'
+
 
 import { useState } from "react";
 import { useStepContext } from "@mui/material";
 import FocusTrap from "@mui/material/Unstable_TrapFocus";
 import zIndex from "@mui/material/styles/zIndex";
+
 
 export default function FogChessboard() {
     const [fen, setFen] = useState("start");
@@ -23,6 +26,7 @@ export default function FogChessboard() {
     const [currentPlayBackIndex, setCurrentPlayBackIndex] = useState(0);
     const [moveFrom, setMoveFrom] = useState(null);
     const [optionSquares, setOptionSquares] = useState({});
+
     // prettier-ignore
     const [whitePieceSquares, setWhitePieceSquare] = useState( new Set([
                 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
@@ -111,7 +115,22 @@ export default function FogChessboard() {
         setOptionSquares(fog(fogSquares));
     }, []);
 
-    // Current problem:
+    
+    // Call the AI every black's turn
+    useEffect(() => {
+        const engineMove = async () => {
+            const url = "http://127.0.0.1:5501/api/engine"
+            let response = await fetch(`${url}?fen=${game.fen()}`);
+            response = await response.json()
+            console.log(response);
+            onDrop(response.from, response.to);
+        }
+        if (!isWhiteTurn) {
+            console.log("Black turn !!!");
+            engineMove();
+        }
+    }, [isWhiteTurn])
+
 
     // Manage win dialog state
     const resetGame = () => {
@@ -152,16 +171,18 @@ export default function FogChessboard() {
             return result;
         } catch (e) {
             // console.log(e) // Information of incorrect move
-            console.log("No more move");
+            console.log("Invalid move");
             return null;
         }
     }
 
     function onDrop(sourceSquare, targetSquare) {
+
         const move = makeAMove({
             from: sourceSquare,
             to: targetSquare,
         });
+
 
         // illegal move
         if (move === null) return false;
