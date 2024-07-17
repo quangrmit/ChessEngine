@@ -604,10 +604,10 @@ class Chess:
             if (not self._board[i] or self._board[i]['color'] == them):
                 continue
 
-            type = self._board[i]['type']
+            Type = self._board[i]['type']
             to = None
-            if (type == PAWN):
-                if (forPiece and forPiece != type):
+            if (Type == PAWN):
+                if (forPiece and forPiece != Type):
                     continue
                 to = i + PAWN_OFFSETS[''.join(us)][0]
                 if (to not in self._board):
