@@ -593,10 +593,10 @@ class Chess:
             if (not self._board[i] or self._board[i]['color'] == them):
                 continue
 
-            type = self._board[i]['type']
+            Type = self._board[i]['type']
             to = None
-            if (type == PAWN):
-                if (forPiece and forPiece != type):
+            if (Type == PAWN):
+                if (forPiece and forPiece != Type):
                     continue
                 to = i + PAWN_OFFSETS[us][0]
                 if (not self._board[to]):
@@ -616,21 +616,21 @@ class Chess:
                     elif (to == self._epSquare):
                         addMove(moves, us, i, to, PAWN, PAWN, BITS['EP_CAPTURE']) 
                 else:
-                    if (forPiece and forPiece != type):
+                    if (forPiece and forPiece != Type):
                         continue
-                    for j in range(len(PIECE_OFFSETS[type])):
-                        offset = PIECE_OFFSETS[type][j]
+                    for j in range(len(PIECE_OFFSETS[Type])):
+                        offset = PIECE_OFFSETS[Type][j]
                         to = i
                         while (True):
                             to += offset
                             if (to & 0x88): break
                             if (not self._board[to]):
-                                addMove(moves, us, i, to, type)
+                                addMove(moves, us, i, to, Type)
                             else:
                                 if (self._board[to]['color'] == us): break
-                                addMove(moves, us, i, to, type, self._board[to]['type'], BITS['CAPTURE'])
+                                addMove(moves, us, i, to, Type, self._board[to]['type'], BITS['CAPTURE'])
                                 break
-                            if (type == KNIGHT or type == KING):
+                            if (Type == KNIGHT or Type == KING):
                                 break
         if (forPiece == None or forPiece == KING):
             if (not singleSquare or lastSquare == self._kings[us]):
