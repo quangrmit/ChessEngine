@@ -230,7 +230,7 @@ def addMove(moves, color, From, to, piece, captured = None, flags = BITS['NORMAL
             promotion = PROMOTIONS[i]
             move = {
                 'color': color,
-                'From': From,
+                'from': From,
                 'to': to,
                 'piece': piece,
                 'captured': captured,
@@ -241,7 +241,7 @@ def addMove(moves, color, From, to, piece, captured = None, flags = BITS['NORMAL
     else: 
         move = {
             'color': color,
-            'From': From,
+            'from': From,
             'to': to,
             'piece': piece,
             'captured': captured,
@@ -272,7 +272,7 @@ def trimFen(fen):
 class Chess:
 
     def __init__(self, fen = DEFAULT_POSITION) -> None:
-        self._board = [None] * 128
+        self._board = {}
         self._turn = WHITE
         self._header = {}
         self._kings = {'w': EMPTY, 'b': EMPTY}
@@ -286,7 +286,7 @@ class Chess:
         self.load(fen)
 
     def clear(self, config = { 'preserveHeaders': False }):
-        self._board = [None] * 128
+        self._board = {}
         self._kings = {'w': EMPTY, 'b': EMPTY}
         self._turn = WHITE
         self._castling = { 'w': 0, 'b': 0 }
@@ -311,7 +311,8 @@ class Chess:
         tokens = fen.split()
         if (len(tokens) >= 2 and len(tokens) < 6):
             adjustment = ['-', '-', '0', '1']
-            fen = tokens + ' '.adjustment[-(6 - len(tokens))]
+            fen = tokens + adjustment[-6-(len(tokens))]
+            fen = " ".join(fen)
         tokens = fen.split();
         if (config['skipValidation'] is False):
             validation = validateFen(fen)
@@ -339,27 +340,28 @@ class Chess:
                 square += 1
         self._turn = tokens[1]
         if ('K' in tokens[2]):
-            self._castling['w'] = BITS['KSIDE_CASTLE']
+            self._castling['w'] = BITS['KSIDE_CASTLE'] | self._castling['w']
         if ('Q' in tokens[2]):
-            self._castling['w'] = BITS['QSIDE_CASTLE']
+            self._castling['w'] = BITS['QSIDE_CASTLE'] | self._castling['w']
         if ('k' in tokens[2]):
-            self._castling['b'] = BITS['KSIDE_CASTLE']
+            self._castling['b'] = BITS['KSIDE_CASTLE'] | self._castling['b']
         if ('q' in tokens[2]):
-            self._castling['b'] = BITS['QSIDE_CASTLE']
+            self._castling['b'] = BITS['QSIDE_CASTLE'] | self._castling['b']
         if (tokens[3] == '-'):
             self._epSquare = EMPTY
         else:
             self._epSquare = Ox88[tokens[3]]
         self._halfMoves = int(tokens[4])
-        self._moveNumber = int(tokens(5))
+        self._moveNumber = int(tokens[5])
         self._updateSetup(fen)
         self._incPositionCount(fen)
                 
     def fen(self):
         empty = 0
         fen = ''
-        for i in range(Ox88['h1'] + 1):
-            if (self._board[i]):
+        i = 0
+        while i <= Ox88['h1']:
+            if (i in self._board):
                 if (empty > 0):
                     fen += str(empty)
                     empty = 0
@@ -371,14 +373,15 @@ class Chess:
             else:
                 empty += 1
             
-            ## Problem
             if ((i + 1) & 0x88): 
                 if (empty > 0):
                     fen += str(empty)
                 if (i != Ox88['h1']):
                     fen += '/'
                 empty = 0
-                i += 8
+                i += 9
+                continue
+            i += 1
             
         castling = ''
         if (self._castling[WHITE] & BITS['KSIDE_CASTLE']):
@@ -394,17 +397,17 @@ class Chess:
         eqSquare = '-'
 
         if (self._epSquare != EMPTY):
-            bigPawnSquare = self._epSquare + (16 if self._turn == WHITE else -16)
+            bigPawnSquare = self._epSquare + (16 if ''.join(self._turn) == WHITE else -16)
             squares = [bigPawnSquare + 1, bigPawnSquare - 1]
             for square in squares:
                 if (square & 0x88):
                     continue
-                color = self._turn
-                if (self._board[square]):
+                color = ''.join(self._turn)
+                if (square in self._board):
                     if (self._board[square]['color'] == color and self._board[square]['type'] == PAWN):
                         move = {
                             'color': color,
-                            'From': square,
+                            'from': square,
                             'to': self._epSquare,
                             'piece': PAWN,
                             'captured': PAWN,
@@ -415,7 +418,7 @@ class Chess:
                         self._undoMove()
                         if (isLegal):
                             eqSquare = algebraic(self._epSquare)
-        return " ".join([ fen, self._turn, castling, eqSquare, self._halfMoves, self._moveNumber ])
+        return " ".join([ fen, ''.join(self._turn), castling, eqSquare, str(self._halfMoves), str(self._moveNumber) ])
     
     def _updateSetup(self, fen):
         if (len(self._history) > 0): return
@@ -450,8 +453,9 @@ class Chess:
         sq = Ox88[square]
         if (config['type'] == KING and not(self._kings[config['color']] == EMPTY or self._kings[config['color']] == sq)):
             return False
-
-        currentPieceOnSquare = self._board[sq]
+        currentPieceOnSquare = {}
+        if (sq in self._board):
+            currentPieceOnSquare = self._board[sq]
         if (currentPieceOnSquare and currentPieceOnSquare['type'] == KING):
             self._kings[currentPieceOnSquare['color']] = EMPTY
         self._board[sq] = {
@@ -474,11 +478,11 @@ class Chess:
 
     def _updateCastlingRights(self):
         whiteKingInPlace = None
-        if (self._board[Ox88['e1']] != None):
+        if (Ox88['e1'] in self._board):
             whiteKingInPlace = self._board[Ox88['e1']]['type'] == KING and self._board[Ox88['e1']]['color'] == WHITE
         
         blackKingInPlace = None
-        if (self._board[Ox88['e8']] != None):
+        if (Ox88['e8'] in self._board):
             blackKingInPlace = self._board[Ox88['e8']]['type'] == KING and self._board[Ox88['e8']]['color'] == WHITE
 
         if (not whiteKingInPlace):
@@ -497,7 +501,7 @@ class Chess:
         return self._attacked(attackedBy, Ox88[square])
 
     def isCheck(self):
-        return self._isKingAttacked(self._turn)
+        return False
     
     def inCheck(self):
         return self.isCheck()
@@ -566,13 +570,17 @@ class Chess:
         return moves
 
     def _moves(self, config = { 'legal': True, 'piece': None, 'square': None }):
-        forSquare = config['square'].lower() if (config['square']) else None
-        forPiece = None
-        if (config['piece'] != None):
-            forPiece = config['piece'].lower()
+        forSquare = None
+        if ('square' in config):
+            if (config['square'] != None):
+                forSquare = config['square'].lower()
+        forPiece = None 
+        if ('piece' in config):
+            if (config['piece'] != None):
+                forPiece = config['piece'].lower()
 
         moves = []
-        us = self._turn
+        us = ''.join(self._turn)
         them = swapColor(us)
         firstSquare = Ox88['a8']
         lastSquare = Ox88['h1']
@@ -585,7 +593,10 @@ class Chess:
                 firstSquare = lastSquare = Ox88[forSquare]
                 singleSquare = True
 
-        for i in range(lastSquare - firstSquare + 1):
+        for i in range(firstSquare, lastSquare + 1):
+            if (i not in self._board):
+                continue
+
             if (i & 0x88):
                 i += 7
                 continue
@@ -598,87 +609,89 @@ class Chess:
             if (Type == PAWN):
                 if (forPiece and forPiece != Type):
                     continue
-                to = i + PAWN_OFFSETS[us][0]
-                if (not self._board[to]):
+                to = i + PAWN_OFFSETS[''.join(us)][0]
+                if (to not in self._board):
                     addMove(moves, us, i, to, PAWN)
 
-                    to = i + PAWN_OFFSETS[us][1]
-                    if (SECOND_RANK[us] == rank(i) and not self._board[to]):
+                    to = i + PAWN_OFFSETS[''.join(us)][1]
+                    if (SECOND_RANK[''.join(us)] == rank(i) and to not in self._board):
                         addMove(moves, us, i, to, PAWN, None, BITS['BIG_PAWN'])
 
                 for j in range(2,4):
-                    to = i + PAWN_OFFSETS[us][j]
+                    to = i + PAWN_OFFSETS[''.join(us)][j]
                     if (to & 0x88):
                         continue
-                    if (self._board[to] != None):
-                        if (self._board[to]['color'] == them):
-                            addMove(moves, us, i, to, PAWN, self._board[to]['type'], BITS['CAPTURE']) 
+                    if (to in self._board):
+                        if ('color' in self._board[to]):
+                            if (self._board[to]['color'] == them):
+                                addMove(moves, us, i, to, PAWN, self._board[to]['type'], BITS['CAPTURE']) 
                     elif (to == self._epSquare):
                         addMove(moves, us, i, to, PAWN, PAWN, BITS['EP_CAPTURE']) 
-                else:
-                    if (forPiece and forPiece != Type):
-                        continue
-                    for j in range(len(PIECE_OFFSETS[Type])):
-                        offset = PIECE_OFFSETS[Type][j]
-                        to = i
-                        while (True):
-                            to += offset
-                            if (to & 0x88): break
-                            if (not self._board[to]):
-                                addMove(moves, us, i, to, Type)
-                            else:
-                                if (self._board[to]['color'] == us): break
-                                addMove(moves, us, i, to, Type, self._board[to]['type'], BITS['CAPTURE'])
-                                break
-                            if (Type == KNIGHT or Type == KING):
-                                break
+            else:
+                if (forPiece and forPiece != type):
+                    continue
+                for j in range(len(PIECE_OFFSETS[type])):
+                    offset = PIECE_OFFSETS[type][j]
+                    to = i
+                    while (True):
+                        to += offset
+                        if (to & 0x88): break
+                        if (to not in self._board):
+                            addMove(moves, us, i, to, type)
+                        else:
+                            if (to in self._board):
+                                if ('color' in self._board[to]):
+                                    if (self._board[to]['color'] == us): break
+                                    addMove(moves, us, i, to, type, self._board[to]['type'], BITS['CAPTURE'])
+                                    break
+                        if (type == KNIGHT or type == KING):
+                            break
         if (forPiece == None or forPiece == KING):
-            if (not singleSquare or lastSquare == self._kings[us]):
-                if (self._castling[us] & BITS['KSIDE_CASTLE']):
-                    castlingFrom = self._kings[us]
+            if (not singleSquare or lastSquare == self._kings[''.join(us)]):
+                if (self._castling[''.join(us)] & BITS['KSIDE_CASTLE']):
+                    castlingFrom = self._kings[''.join(us)]
                     castlingTo = castlingFrom + 2
                     if (
                         not self._board[castlingFrom + 1] and 
                         not self._board[castlingTo] and 
-                        not self._attacked(them, self._kings[us]) and
+                        not self._attacked(them, self._kings[''.join(us)]) and
                         not self._attacked(them, castlingFrom + 1) and
                         not self._attacked(them, castlingTo) 
                     ):
-                        addMove(moves, us, self._kings[us], castlingTo, KING, None, BITS['KSIDE_CASTLE'])
-                if (self._castling[us] & BITS['QSIDE_CASTLE']):
-                    castlingFrom = self._kings[us]
+                        addMove(moves, us, self._kings[''.join(us)], castlingTo, KING, None, BITS['KSIDE_CASTLE'])
+                if (self._castling[''.join(us)] & BITS['QSIDE_CASTLE']):
+                    castlingFrom = self._kings[''.join(us)]
                     castlingTo = castlingFrom - 2
                     if(
                         not self._board[castlingFrom - 1] and 
                         not self._board[castlingFrom - 2] and
                         not self._board[castlingFrom - 3] and
-                        not self._attacked(them, self._kings[us]) and
+                        not self._attacked(them, self._kings[''.join(us)]) and
                         not self._attacked(them, castlingFrom - 1) and
                         not self._attacked(them, castlingTo)
                     ):
-                        addMove(moves, us, self._kings[us], castlingTo, KING, None, BITS['QSIDE_CASTLE'])
-        if (not config['legal'] or self._kings[us] == -1):
+                        addMove(moves, us, self._kings[''.join(us)], castlingTo, KING, None, BITS['QSIDE_CASTLE'])
+        if (not config['legal'] or self._kings[''.join(us)] == -1):
             return moves
         
         legalMoves = []
         for i in range(len(moves)):
             self._makeMove(moves[i])
-            if (not self._isKingAttacked(us)):
-                legalMoves.append(moves[i])
+            legalMoves.append(moves[i])
             self._undoMove()
                     
         return legalMoves
 
-    def move(move, config):
+    def move(self, move, config = {}):
         if 'strict' not in config:
             config['strict'] = False
 
-        moveObj = None
+        moveObj = {}
         strict = config['strict']
         
-        if (type(move) == type('s')):
+        if (type(move) == str):
             moveObj = self._moveFromSan(move, strict)
-        elif (type(move) == type(dict())):
+        elif (type(move) == dict):
             moves = self._moves()
             # convert the pretty moves object to an ugly move obj
             for i in range(len(moves)):
@@ -692,7 +705,7 @@ class Chess:
         # failed to find move
         
         if not moveObj:
-            if type(move) == type('s'):
+            if type(move) == str:
                 raise Exception(f"Invalid move: {move}")
             else:
                 raise Exception(f"Invalid move: {move}")
@@ -707,7 +720,7 @@ class Chess:
         self._history.append({
             'move': move,
             'kings': {'b': self._kings['b'], 'w': self._kings['w']},
-            'turn': self._turn,
+            'turn': ''.join(self._turn),
             'castling': { 'b': self._castling['b'], 'w': self._castling['w'] },
             'epSquare': self._epSquare,
             'halfMoves': self._halfMoves,
@@ -715,48 +728,50 @@ class Chess:
         })
 
     def _makeMove(self, move):
-        us = self._turn
+        us = ''.join(self._turn)
         them = swapColor(us),
         self._push(move)
-        self._board[move['to']] = self._board[move['from']]
-        del self._board[move['from']]
+        if (move['from'] in self._board):
+            self._board[move['to']] = self._board[move['from']]
+            del self._board[move['from']]
         if (move['flags'] & BITS['EP_CAPTURE']):
-            if (self._turn == BLACK):
+            if (''.join(self._turn) == BLACK):
                 del self._board[move['to'] - 16]
             else:
                 del self._board[move['to'] + 16]
-        if (move['promotion']):
+        if ('promotion' in move):
             self._board[move['to']] = {
                 'type': move['promotion'],
                 'color': us
             }
-        if (self._board[move['to']] == KING):
-            self._kings[us] = move['to']
-            if (move['flags'] & BITS['KSIDE_CASTLE']):
-                castlingTo = move['to'] - 1
-                castlingFrom = move['to'] + 1
-                self._board[castlingTo] = self._board[castlingFrom]
-                del self._board[castlingFrom]
-            elif (move['flags'] & BITS['QSIDE_CASTLE']):
-                castlingTo = move['to'] + 1
-                castlingFrom = move['to'] - 2
-                self._board[castlingTo] = self._board[castlingFrom]
-                del self._board[castlingFrom]
-            self._castling[us] = 0
+        if (move['to'] in self._board):
+              if (self._board[move['to']]['type'] == KING):
+                self._kings[''.join(us)] = move['to']
+                if (move['flags'] & BITS['KSIDE_CASTLE']):
+                    castlingTo = move['to'] - 1
+                    castlingFrom = move['to'] + 1
+                    self._board[castlingTo] = self._board[castlingFrom]
+                    del self._board[castlingFrom]
+                elif (move['flags'] & BITS['QSIDE_CASTLE']):
+                    castlingTo = move['to'] + 1
+                    castlingFrom = move['to'] - 2
+                    self._board[castlingTo] = self._board[castlingFrom]
+                    del self._board[castlingFrom]
+                self._castling[''.join(us)] = 0
 
-        if (self._castling[us]):
-            for i in range(len(ROOKS[us])):
-                if (move['from'] == ROOKS[us][i]['square'] and (self._castling[us] & ROOKS[us][i]['flag'])):
-                    self._castling[us] = self._castling[us] ^ ROOKS[us][i]['flag']
+        if (us in self._castling):
+            for i in range(len(ROOKS[''.join(us)])):
+                if (move['from'] == ROOKS[''.join(us)][i]['square'] and (self._castling[''.join(us)] & ROOKS[''.join(us)][i]['flag'])):
+                    self._castling[''.join(us)] = self._castling[''.join(us)] ^ ROOKS[''.join(us)][i]['flag']
                     break  
         
-        if (self._castling):
+        if (them in self._castling):
             for i in range(len(ROOKS[them])):
                 if (move['to'] == ROOKS[them][i]['square'] and self._castling[them] & ROOKS[them][i]['flag']):
                     self._castling[them] = self._castling[them][i]['flag']
         
         if (move['flags'] & BITS['BIG_PAWN']):
-            if (us == BLACK):
+            if (''.join(us) == BLACK):
                 self._epSquare = move['to'] - 16
             else:
                 self._epSquare = move['to'] + 16
@@ -770,11 +785,11 @@ class Chess:
         else:
             self._halfMoves += 1
         
-        if (us == BLACK):
+        if (''.join(us) == BLACK):
             self._moveNumber += 1
-        self._turn = them
+        self._turn = ''.join(them)
         
-    def undo():
+    def undo(self):
         move = self._undoMove()
         if move:
             prettyMove = self._makePretty(move)
@@ -794,20 +809,20 @@ class Chess:
         self._epSquare = old['epSquare']
         self._halfMoves = old['halfMoves']
         self._moveNumber = old['moveNumber']
-        us = self._turn
-        them = self.swapColor(us)
-
-        self._board[move['from']] = self._board[move['to']]
-        self._board[move['from']]['type'] = move['piece'] # to undo any promotions
-        del self._board[move['to']]        
+        us = ''.join(self._turn)
+        them = swapColor(us)
+        if (move['to'] in self._board):
+            self._board[move['from']] = self._board[move['to']]
+            self._board[move['from']]['type'] = move['piece'] # to undo any promotions
+            del self._board[move['to']]    
         if move['captured']:
             if move['flags'] & BITS['EP_CAPTURE']:
                 index = None
-                if us == exports['BLACK']:
+                if ''.join(us) == BLACK:
                     index = move['to'] - 16
                 else:
                     index = move['to'] + 16
-                self._board[index] = {'type': exports['PAWN'], 'color': them}
+                self._board[index] = {'type': PAWN, 'color': them}
             
             else:
                 self._board[move['to']] = {'type': move['captured'], 'color': them}
@@ -840,7 +855,7 @@ class Chess:
     def loadPgn(pgn, config):
         pass
 
-    def _moveToSan(move, moves):
+    def _moveToSan(self, move, moves):
         output = ''
         if (move['flags'] & BITS['KSIDE_CASTLE']):
             output = 'O-O'
@@ -849,7 +864,7 @@ class Chess:
         else:
             if (move['piece'] != PAWN):
                 disambiguator = getDisambiguator(move, moves)
-                output += move['piece'].upper() + getDisambiguator
+                output += move['piece'].upper() + disambiguator
             if (move['flags'] & (BITS['CAPTURE'] | BITS['EP_CAPTURE'])):
                 if (move['piece'] == PAWN):
                     output += algebraic(move['from'])[0]
@@ -927,7 +942,7 @@ class Chess:
                         (not piece or piece.lower() == moves[i]['piece']) and
                         Ox88['to'] == moves[i]['to'] and
                         (From == square[0] or From == square[1]) and
-                        (not promotion or promotio.lower() == moves[i]['promotion'])
+                        (not promotion or promotion.lower() == moves[i]['promotion'])
                     ):
                         return moves[i]
         return None        
@@ -942,7 +957,16 @@ class Chess:
         pass
 
     def _makePretty(self, uglyMove):
-        color, piece, From, to, flags, captured, promotion = attrgetter('color', 'piece', 'from', 'to', 'flags', 'captured', 'promotion')(uglyMove)
+        # color, piece, From, to, flags, captured, promotion = attrgetter('color', 'piece', 'from', 'to', 'flags', 'captured', 'promotion')(uglyMove)
+        color = uglyMove['color']
+        piece = uglyMove['piece']
+        flags = uglyMove['flags']
+        From = uglyMove['from']
+        to = uglyMove['to']
+        captured = uglyMove['captured']
+        promotion = None
+        if ('promotion' in uglyMove):
+            promotion = uglyMove['promotion']
 
         prettyFlags = ""
 
@@ -979,13 +1003,13 @@ class Chess:
         return move
 
     def turn(self):
-        return self._turn
+        return ''.join(self._turn)
     
     def board(self):
         output = []
         row = []
         for i in range(129):
-            if (self._board[i] == None):
+            if (i not in self._board):
                 row.append(None)
             else:
                 row.append({
@@ -1015,7 +1039,7 @@ class Chess:
 
     def _incPositionCount(self, fen):
         trimmedFen = trimFen(fen)
-        if (self._positionCount[trimmedFen] == None):
+        if (trimmedFen not in self._positionCount):
             self._positionCount[trimmedFen] = 0
         self._positionCount[trimmedFen] += 1
 
