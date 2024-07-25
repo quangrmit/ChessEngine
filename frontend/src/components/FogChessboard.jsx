@@ -8,10 +8,6 @@ import Sidebar from "./Sidebar";
 import {defaultPieces} from '../modules/pieces'
 
 
-import { useState } from "react";
-import { useStepContext } from "@mui/material";
-import FocusTrap from "@mui/material/Unstable_TrapFocus";
-import zIndex from "@mui/material/styles/zIndex";
 
 
 export default function FogChessboard() {
