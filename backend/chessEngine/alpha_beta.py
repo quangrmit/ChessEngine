@@ -1,5 +1,7 @@
 from Chessjs import validateFen, isDigit, Chess, algebraic
 from numpy import inf
+from flask import Flask, make_response, Response
+from flask import jsonify
 
 
 # score = materialWeight * (numWhitePieces - numBlackPieces) * who2move 
@@ -54,7 +56,7 @@ def eval(fen=default_fen):
 
 
 # pseudocode
-def minimax(position, depth, alpha, beta):
+def minimax_ab_pruning(position, depth, alpha, beta):
 
     # NEeds to check for end of game too
     if depth == 0:
@@ -72,7 +74,7 @@ def minimax(position, depth, alpha, beta):
             new_c = Chess(position)
             new_position = new_c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
 
-            curr_score = minimax(position=new_position, depth=depth - 1)
+            curr_score = minimax_ab_pruning(position=new_position, depth=depth - 1)
             max_score = max(max_score, curr_score)
             alpha = max(alpha, curr_score)
             if beta <= alpha:
@@ -85,15 +87,68 @@ def minimax(position, depth, alpha, beta):
         for move in c._moves():
             new_c = Chess(position)
             new_position = new_c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
-            curr_score = minimax(position=new_position, depth=  depth - 1)
+            curr_score = minimax_ab_pruning(position=new_position, depth=  depth - 1)
             min_score = min(min_score, curr_score)
             beta = min(beta, curr_score)
             if beta <= alpha:
                 break
         return min_score
+    
+def minimax(position, depth):
 
 
-# print(minimax(default_fen, depth=2))
+    # NEeds to check for end of game too
+    if depth == 0:
+        obj = {
+            'fen' : position,
+            'eval': eval(position)
+        }
+        return obj
+    
+    c = Chess(position)
+    if position.split()[1] == 'w':
+        max_score = -inf
+        count = 0
+        children = []
+        for move in c._moves():
+            count += 1
+            print(count)
+            new_c = Chess(position)
+            new_position = new_c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
+
+            curr = minimax(position=new_position, depth=depth - 1)
+            children.append(curr)
+
+            curr_score = curr['eval']
+            max_score = max(max_score, curr_score)
+
+        return {
+            'fen': position,
+            'eval': max_score,
+            'children': children
+        }
+
+    else:
+        # min
+        min_score = inf
+        children = []
+        for move in c._moves():
+            new_c = Chess(position)
+            new_position = new_c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
+            curr = minimax(position=new_position, depth=  depth - 1)
+            children.append(curr)
+
+            curr_score = curr['eval']
+
+
+            min_score = min(min_score, curr_score)
+
+        return {
+            'fen': position,
+            'eval': min_score,
+            'children': children
+        }
+
 
 
 # Mental note: validateFen might be wrong
@@ -101,34 +156,18 @@ test_position = 'rnbqkbnr/pppppppp/8/8/8/8/RNBQKBNR w KQkq - 0 1'
 
 print(eval(test_position))
 
-# def minimax(node, depth, alpha, beta, maximizingPlayer):
-#     if depth == 0 or node is a terminal node:
-#         return the heuristic value of node
+app = Flask(__name__)
+@app.route('/data')
+def foo():
+    data = minimax(default_fen, 1)
 
-#     if maximizingPlayer:
-#         maxEval = -infinity
-#         for each child of node:
-#             eval = minimax(child, depth - 1, alpha, beta, false)
-#             maxEval = max(maxEval, eval)
-#             alpha = max(alpha, eval)
-#             if beta <= alpha:
-#                 break  // beta cutoff
-#         return maxEval
-#     else:
-#         minEval = infinity
-#         for each child of node:
-#             eval = minimax(child, depth - 1, alpha, beta, true)
-#             minEval = min(minEval, eval)
-#             beta = min(beta, eval)
-#             if beta <= alpha:
-#                 break  // alpha cutoff
-#         return minEval
+    response = make_response((data))
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
-# // Initial call to the minimax function
-# rootNode = ...  // the initial game state
-# initialDepth = ...  // desired search depth
-# initialAlpha = -infinity
-# initialBeta = infinity
-# isMaximizingPlayer = true  // or false, depending on which player's turn it is
+def main():   
+    app.run(debug=True, port=5501)
 
-# bestValue = minimax(rootNode, initialDepth, initialAlpha, initialBeta, isMaximizingPlayer)
+if __name__ == '__main__':
+    main()
