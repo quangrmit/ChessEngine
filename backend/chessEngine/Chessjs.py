@@ -414,7 +414,8 @@ class Chess:
                             'flags': BITS['EP_CAPTURE']
                         }
                         self._makeMove(move)
-                        isLegal = not self._isKingAttacked(color)
+                        # isLegal = self._isKingAttacked(color)
+                        isLegal = False
                         self._undoMove()
                         if (isLegal):
                             eqSquare = algebraic(self._epSquare)

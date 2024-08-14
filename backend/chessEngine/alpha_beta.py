@@ -37,7 +37,7 @@ def eval(fen=default_fen):
         return 
     material_s = fen.split()[0]
     all_material = ''.join(material_s.split('/'))
-    print(all_material)
+    # print(all_material)
 
     for char in all_material:
         if isDigit(char):
@@ -70,7 +70,7 @@ def minimax_ab_pruning(position, depth, alpha, beta):
         count = 0
         for move in c._moves():
             count += 1
-            print(count)
+            # print(count)
             new_c = Chess(position)
             new_position = new_c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
 
@@ -93,9 +93,83 @@ def minimax_ab_pruning(position, depth, alpha, beta):
             if beta <= alpha:
                 break
         return min_score
-    
-def minimax(position, depth):
 
+best_move = None
+DEPTH = 4
+c = Chess(default_fen)
+    
+def best_move(position, depth):
+    global best_move, c, DEPTH
+    minimax_new(position = position, depth = DEPTH)
+    return best_move
+
+def minimax_new(position, depth):
+    if depth == 0:
+        obj = {
+            'fen' : position,
+            'eval': eval(position)
+        }
+        return obj
+    
+    if position.split()[1] == 'w':
+        max_score = -inf
+        for move in c._moves():
+
+            # Make move
+
+            new_position = c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
+            print(new_position)
+            # Iterate all next move
+            curr = minimax(position=new_position, depth=depth - 1)
+
+            # Undo move
+            c._undoMove()
+
+            # Find best move
+            curr_score = curr['eval']
+            if (curr_score > max_score):
+                max_score = curr_score
+                if (depth == DEPTH):
+                    best_move = {
+                        'from': algebraic(move['from']),
+                        'to': algebraic(move['to'])
+                    }
+            max_score = max(max_score, curr_score)
+
+        return {
+            'fen': position,
+            'eval': max_score
+        }
+
+    else:
+        min_score = inf
+        for move in c._moves():
+            # Make move
+            new_position = c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
+
+            # Iterate all next move
+            curr = minimax(position=new_position, depth=  depth - 1)
+
+            # Undo move
+            c._undoMove()
+            
+            # Find best move
+            curr_score = curr['eval']
+            if (curr_score < min_score):
+                min_score = curr_score
+                if (depth == DEPTH ):
+                    best_move = {
+                        'from': algebraic(move['from']),
+                        'to': algebraic(move['to'])
+                    }
+
+        return {
+            'fen': position,
+            'eval': min_score
+        }
+
+
+def minimax(position, depth):
 
     # NEeds to check for end of game too
     if depth == 0:
@@ -104,7 +178,6 @@ def minimax(position, depth):
             'eval': eval(position)
         }
         return obj
-    
     c = Chess(position)
     if position.split()[1] == 'w':
         max_score = -inf
@@ -112,7 +185,7 @@ def minimax(position, depth):
         children = []
         for move in c._moves():
             count += 1
-            print(count)
+            # print(count)
             new_c = Chess(position)
             new_position = new_c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
 
@@ -135,7 +208,7 @@ def minimax(position, depth):
         for move in c._moves():
             new_c = Chess(position)
             new_position = new_c.move({'from': algebraic(move['from']), 'to': algebraic(move['to'])})['after']
-            curr = minimax(position=new_position, depth=  depth - 1)
+            curr = minimax(position=new_position, depth =  depth - 1)
             children.append(curr)
 
             curr_score = curr['eval']
@@ -152,19 +225,23 @@ def minimax(position, depth):
 
 
 # Mental note: validateFen might be wrong
-test_position = 'rnbqkbnr/pppppppp/8/8/8/8/RNBQKBNR w KQkq - 0 1'
+# test_position = 'rnbqkbnr/pppppppp/8/8/8/8/RNBQKBNR w KQkq - 0 1'
 
-print(eval(test_position))
+# print(eval(test_position))
+
+minimax_new(default_fen, 3)
 
 app = Flask(__name__)
 @app.route('/data')
 def foo():
-    data = minimax(default_fen, 1)
+    # data = minimax(default_fen, 2)
+    minimax_new(default_fen, 3)
 
-    response = make_response((data))
-    response.headers['Content-Type'] = 'application/json'
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    return response
+    # response = make_response((data))
+    # response.headers['Content-Type'] = 'application/json'
+    # response.headers['Access-Control-Allow-Origin'] = '*'
+    # return response
+    return best_move
 
 def main():   
     app.run(debug=True, port=5501)
