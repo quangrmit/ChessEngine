@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_map>
 #include <stdexcept>
+#include <regex>
 #include "string"
 #include "vector"
 #include "utils.h"
@@ -159,19 +160,19 @@ string getDisambiguator(Move move, vector<Move> moves);
 struct Move
 {
     char color;
-    string from;
-    string to;
+    int from;
+    int to;
     string san;
     string lan;
     string before;
     string after;
     char piece;
     char captured;
-    int promotion;
+    char promotion;
     int flags;
 };
 
-void addMove(vector<Move> moves, char color, string from, string to, char piece, char captured, int flags = BITS.at("NORMAL"));
+void addMove(vector<Move> moves, char color, int from, int to, char piece, char captured, int flags = BITS.at("NORMAL"));
 
 char inferPieceType(string san);
 
@@ -184,7 +185,7 @@ class ChessEngine
 {
 public:
     ChessEngine();
-    ChessEngine(string fen);
+    ChessEngine(string fen = DEFAULT_POSITION);
 
     ~ChessEngine();
 

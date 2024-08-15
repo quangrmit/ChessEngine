@@ -208,7 +208,7 @@ def getDisambiguator(move, moves):
         ambigTo = moves[i]['to']
         ambigPiece = moves[i]['piece']
 
-        if (piece == ambigPiece and From != ambigPiece and to == ambigTo):
+        if (piece == ambigPiece and From != ambigFrom and to == ambigTo):
             ambiguities += 1
             if (rank(From) == rank(ambigFrom)):
                 sameRank += 1
@@ -264,7 +264,7 @@ def inferPieceType(san):
 
 def strippedSan(move):
     move = re.sub('=', '', move)
-    return re.sub('[+#]?[?!]*$', '')
+    return re.sub('[+#]?[?!]*$', '', move)
 
 def trimFen(fen):
     return ' '.join(fen.split(' ')[0:4])
