@@ -159,16 +159,16 @@ string getDisambiguator(Move move, vector<Move> moves);
 
 struct Move
 {
-    char color;
+    char color = '\0';
     int from;
     int to;
-    string san;
-    string lan;
-    string before;
-    string after;
-    char piece;
-    char captured;
-    char promotion;
+    string san = "";
+    string lan = "";
+    string before = "";
+    string after = "";
+    char piece = '\0';
+    char captured = '\0';
+    char promotion = '\0';
     int flags;
 };
 
@@ -184,6 +184,18 @@ string trimFen(string fen);
 class ChessEngine
 {
 public:
+    map<int, map<string, char>> _board;
+    char _turn;
+    map<string, string> _header;
+    map<char, int> _kings;
+    int _epSquare;
+    int _halfMoves;
+    int _moveNumber;
+    vector<string> _history;
+    map<string, string> _comments;
+    map<char, int> _castling;
+    map<string, int> _positionCount;
+
     ChessEngine();
     ChessEngine(string fen = DEFAULT_POSITION);
 
@@ -201,7 +213,7 @@ public:
 
     void reset();
 
-    bool get(string square); // needs reviewing
+    map<string, char> get(string square); // needs reviewing
 
     // struct _putConfig{
     //     char type;
@@ -213,6 +225,8 @@ public:
     // remove()
 
     void _updateCastlingRights();
+
+    void _updateEnPassantSquare();
 
     bool _isKingAttacked(char color);
 

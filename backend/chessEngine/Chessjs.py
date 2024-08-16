@@ -469,6 +469,7 @@ class Chess:
     def remove(self, square):
         piece = self.get(square)
         del self._board[Ox88[square]]
+        
         if (piece and piece['type'] == KING):
             self._kings[piece['color']] = EMPTY
         self._updateCastlingRights()
