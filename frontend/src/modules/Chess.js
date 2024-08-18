@@ -757,6 +757,7 @@ class Chess {
       !(square & 0x88) &&
       this._board[square]?.color === this._turn &&
       this._board[square]?.type === exports.PAWN;
+      
     if (!attackers.some(canCapture)) {
       this._epSquare = EMPTY;
     }

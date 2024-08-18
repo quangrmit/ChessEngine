@@ -8,7 +8,10 @@
 #include <regex>
 #include "string"
 #include "vector"
-#include "utils.h"
+#include <optional>
+#include <variant>
+
+
 
 using std::map;
 using std::string;
@@ -109,7 +112,12 @@ const int RANK_2 = 6;
 const int RANK_7 = 1;
 const int RANK_8 = 0;
 
-const map<char, int> piece_masks = {
+const map<char, int>  SECOND_RANK = {
+    {'b', RANK_7},
+    {'2', RANK_2}
+};
+
+const map<char, int> PIECE_MASKS = {
     {'p', 0x1},
     {'n', 0x2},
     {'b', 0x4},
@@ -172,7 +180,7 @@ struct Move
     int flags;
 };
 
-void addMove(vector<Move> moves, char color, int from, int to, char piece, char captured, int flags = BITS.at("NORMAL"));
+void addMove(vector<Move> moves, char color, int from, int to, char piece, char captured = '\0', int flags = BITS.at("NORMAL"));
 
 char inferPieceType(string san);
 
@@ -222,13 +230,21 @@ public:
     bool put(map<string, char> config, string square);
     bool _put(map<string, char> config, string square);
 
-    // remove()
+    map<string, char> remove(string square);
 
     void _updateCastlingRights();
 
+    bool canCapture(int square);
+
     void _updateEnPassantSquare();
 
+    bool _attacked(char color, int square);
+
     bool _isKingAttacked(char color);
+
+    bool isAttacked(string square, char attackedBy);
+
+    bool isCheck();
 
     bool inCheck();
 
@@ -244,7 +260,10 @@ public:
 
     bool isGameOver();
 
-    vector<Move> _moves(vector<Move> moves);
+    std::variant<vector<Move>, vector<string>> moves (bool verbose = false, std::optional<string> square=std::nullopt, std::optional<char> piece=std::nullopt);
+
+    vector<Move> _moves(bool legal=true, std::optional<char> piece = std::nullopt, std::optional<string> square = std::nullopt);
+
 
     Move move(Move move, vector<string, bool> config);
 
