@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <stdexcept>
 #include <regex>
+#include <optional>
 #include "string"
 #include "vector"
 #include <optional>
@@ -177,7 +178,7 @@ struct Move
     char piece = '\0';
     char captured = '\0';
     char promotion = '\0';
-    int flags;
+    char flags;
 };
 
 void addMove(vector<Move> moves, char color, int from, int to, char piece, char captured = '\0', int flags = BITS.at("NORMAL"));
@@ -192,6 +193,17 @@ string trimFen(string fen);
 class ChessEngine
 {
 public:
+    struct HistoryMove
+    {
+        Move move;
+        map<char, int> kings;
+        char turn;
+        map<char, int> castling;
+        int epSquare;
+        int halfMoves;
+        int moveNumber;
+    };
+
     map<int, map<string, char>> _board;
     char _turn;
     map<string, string> _header;
@@ -199,7 +211,7 @@ public:
     int _epSquare;
     int _halfMoves;
     int _moveNumber;
-    vector<string> _history;
+    vector<HistoryMove> _history;
     map<string, string> _comments;
     map<char, int> _castling;
     map<string, int> _positionCount;
@@ -265,7 +277,7 @@ public:
     vector<Move> _moves(bool legal=true, std::optional<char> piece = std::nullopt, std::optional<string> square = std::nullopt);
 
 
-    Move move(Move move, vector<string, bool> config);
+    Move move(map<string, string> move, map<string, bool> config);
 
     void _push(Move move);
 
@@ -281,7 +293,7 @@ public:
 
     string _moveToSan(Move move, vector<Move> moves);
 
-    Move _moveFromSan(Move move, bool strict = false);
+    Move _moveFromSan(string move, bool strict = false);
 
     // void ascii();
 

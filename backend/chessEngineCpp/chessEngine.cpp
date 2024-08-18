@@ -648,9 +648,441 @@ bool ChessEngine::_attacked(char color, int square)
 
 bool ChessEngine::_isKingAttacked(char color) 
 {
-    // return false;
     int square = _kings.at(color);
     return square == -1 ? false : _attacked(swapColor(color), square);
+}
+Move ChessEngine::move(map<string, string> move, map<string, bool> config)
+{
+    // remove detect move type to be string, can use variant to fix it
+    Move moveObj = Move();
+    if (config.find("strict") == config.end())
+    {
+        config.insert({"strict", false});
+    }
+    vector<Move> moves = _moves();
+    for (int i = 0; i < moves.size(); i++)
+    {
+        if (move["from"] == algebraic(moves[i].from) && move["to"] == algebraic(moves[i].to) &&
+            (!(moves[i].promotion != '\0') || move["promotion"][0] == moves[i].promotion))
+        {
+            moveObj = moves[i];
+            break;
+        }
+    }
+    if (moveObj.color == '\0')
+    {
+        throw std::runtime_error("Invalid move");
+    }
+    Move prettyMove = _makePretty(moveObj);
+    _makeMove(moveObj);
+    _incPositionCount(prettyMove.after);
+    return prettyMove;
+}
+
+void ChessEngine::_push(Move move)
+{
+    HistoryMove newMove;
+    newMove.move = move;
+    newMove.kings = {{'b', _kings['b']}, {'w', _kings['w']}};
+    newMove.turn = _turn;
+    newMove.castling = {{'b', _castling['b']},
+                        {'w', _castling['w']}};
+
+    newMove.epSquare = _epSquare;
+    newMove.halfMoves = _halfMoves;
+    newMove.moveNumber = _moveNumber;
+}
+
+void ChessEngine::_makeMove(Move move)
+{
+    char us = _turn;
+    char them = swapColor(us);
+    _push(move);
+
+    if (_board.find(move.from) != _board.end())
+    {
+        _board[move.to] = _board[move.from];
+        _board.erase(move.from);
+    }
+
+    if (move.flags & BITS.at("EP_CAPTURE"))
+    {
+        if (_turn == BLACK)
+        {
+            _board.erase(move.to - 16);
+        }
+        else
+        {
+            _board.erase(move.to + 16);
+        }
+    }
+
+    if (move.promotion != '\0')
+    {
+        map<string, char> newMap = {{"type", move.promotion}, {"color", us}};
+        _board[move.to] = newMap;
+    }
+
+    if (_board.find(move.to) != _board.end())
+    {
+        if (_board[move.to]["type"] == KING)
+        {
+            _kings[us] = move.to;
+            int castlingTo, castlingFrom;
+            if (move.flags & BITS.at("KSIDE_CASTLE"))
+            {
+                castlingTo = move.to - 1;
+                castlingFrom = move.to + 1;
+                _board[castlingTo] = _board[castlingFrom];
+                _board.erase(castlingFrom);
+            }
+            else if (move.flags & BITS.at("QSIDE_CASTLE"))
+            {
+                castlingTo = move.to + 1;
+                castlingFrom = move.to - 2;
+                _board[castlingTo] = _board[castlingFrom];
+                _board.erase(castlingFrom);
+            }
+            _castling[us] = 0;
+        }
+    }
+
+    if (_castling.find(us) != _castling.end())
+    {
+        for (int i = 0; i < ROOKS.at(us).size(); i++)
+        {
+            if (move.from == ROOKS.at(us)[i].at("square") && (_castling[us] & ROOKS.at(us)[i].at("flag")))
+            {
+                _castling[us] ^= ROOKS.at(us)[i].at("flag");
+                break;
+            }
+        }
+    }
+
+    if (_castling.find(them) != _castling.end())
+    {
+        for (int i = 0; i < ROOKS.at(them).size(); i++)
+        {
+            if (move.to == ROOKS.at(them)[i].at("square") && (_castling[them] & ROOKS.at(them)[i].at("flag")))
+            {
+                _castling[them] ^= ROOKS.at(them)[i].at("flag");
+            }
+        }
+    }
+
+    if (move.flags & BITS.at("BIG_PAWN"))
+    {
+        if (us == BLACK)
+        {
+            _epSquare = move.to - 16;
+        }
+        else
+        {
+            _epSquare = move.to + 16;
+        }
+    }
+    else
+    {
+        _epSquare = EMPTY;
+    }
+
+    if (move.piece == PAWN)
+    {
+        _halfMoves = 0;
+    }
+    else if (move.flags & (BITS.at("CAPTURE") | BITS.at("EP_CAPTURE")))
+    {
+        _halfMoves = 0;
+    }
+    else
+    {
+        _halfMoves++;
+    }
+
+    if (us == BLACK)
+    {
+        _moveNumber++;
+    }
+
+    _turn = them;
+}
+
+Move ChessEngine::undo()
+{
+    // Consider using nullptr
+    Move move = _undoMove();
+    if (move.color != '\0') // A move is undefined if its color is also undefined
+    {
+        Move prettyMove = _makePretty(move);
+        _decPositionCount(prettyMove.after);
+        return prettyMove;
+    }
+    return Move();
+}
+
+Move ChessEngine::_undoMove()
+{
+    if (_history.empty())
+    {
+        return Move(); // Return an empty or default Move
+    }
+
+    HistoryMove old = _history.back();
+    _history.pop_back();
+
+    Move move = old.move;
+    _kings = old.kings;
+    _turn = old.turn;
+    _castling = old.castling;
+    _epSquare = old.epSquare;
+    _halfMoves = old.halfMoves;
+    _moveNumber = old.moveNumber;
+
+    char us = _turn;
+    char them = swapColor(us);
+
+    if (_board.find(move.to) != _board.end())
+    {
+        _board[move.from] = _board[move.to];
+        _board[move.from]["type"] = move.piece; // To undo any promotions
+        _board.erase(move.to);
+    }
+
+    if (move.captured != '\0')
+    {
+        if (move.flags & BITS.at("EP_CAPTURE"))
+        {
+            int index = (us == BLACK) ? move.to - 16 : move.to + 16;
+            map<string, char> newMap = {{"type", PAWN}, {"color", them}};
+            _board[index] = newMap;
+        }
+        else
+        {
+            map<string, char> newMap = {{"type", PAWN}, {"color", them}};
+            _board[move.to] = newMap;
+        }
+    }
+
+    if (move.flags & (BITS.at("KSIDE_CASTLE") | BITS.at("QSIDE_CASTLE")))
+    {
+        int castlingTo, castlingFrom;
+        if (move.flags & BITS.at("KSIDE_CASTLE"))
+        {
+            castlingTo = move.to + 1;
+            castlingFrom = move.to - 1;
+        }
+        else
+        {
+            castlingTo = move.to - 2;
+            castlingFrom = move.to + 1;
+        }
+        _board[castlingTo] = _board[castlingFrom];
+        _board.erase(castlingFrom);
+    }
+
+    return move;
+}
+
+// map<string, string> ChessEngine::header(vector<string> args);
+
+string ChessEngine::_moveToSan(Move move, vector<Move> moves)
+{
+    string output;
+
+    if (move.flags & BITS.at("KSIDE_CASTLE"))
+    {
+        output = "O-O";
+    }
+    else if (move.flags & BITS.at("QSIDE_CASTLE"))
+    {
+        output = "O-O-O";
+    }
+    else
+    {
+        if (move.piece != PAWN)
+        {
+            string disambiguator = getDisambiguator(move, moves);
+            output += static_cast<char>(toupper(move.piece)) + disambiguator;
+        }
+        if (move.flags & (BITS.at("CAPTURE") | BITS.at("EP_CAPTURE")))
+        {
+            if (move.piece == PAWN)
+            {
+                output += algebraic(move.from)[0];
+            }
+            output += "x";
+        }
+        output += algebraic(move.to);
+        if (move.promotion != '\0')
+        {
+            output += "=" + toupper(static_cast<char>(move.promotion));
+        }
+    }
+
+    _makeMove(move);
+    if (false)
+    {
+        output += isCheckmate() ? "#" : "+";
+    }
+    _undoMove();
+
+    return output;
+}
+
+Move ChessEngine::_moveFromSan(string move, bool strict = false)
+{
+    string cleanMove = strippedSan(move);
+    char pieceType = inferPieceType(cleanMove);
+    std::vector<Move> moves = _moves(true, pieceType);
+
+    for (int i = 0; i < moves.size(); i++)
+    {
+        if (cleanMove == strippedSan(_moveToSan(moves[i], moves)))
+        {
+            return moves[i];
+        }
+    }
+
+    if (strict)
+    {
+        // return empty struct
+        return Move();
+    }
+
+    string piece, from, to, promotion;
+    string piece = "";
+    bool overlyDisambiguated = false;
+    std::smatch matches;
+    std::regex pattern("([pnbrqkPNBRQK])?([a-h][1-8])x?-?([a-h][1-8])([qrbnQRBN])?");
+
+    if (std::regex_search(cleanMove, matches, pattern))
+    {
+        piece = matches[1];
+        from = matches[2];
+        to = matches[3];
+        promotion = matches[4];
+        if (from.size() == 1)
+        {
+            overlyDisambiguated = true;
+        }
+    }
+    else
+    {
+        pattern = std::regex("([pnbrqkPNBRQK])?([a-h]?[1-8]?)x?-?([a-h][1-8])([qrbnQRBN])?");
+        if (std::regex_search(cleanMove, matches, pattern))
+        {
+            piece = matches[1];
+            from = matches[2];
+            to = matches[3];
+            promotion = matches[4];
+            if (from.size() == 1)
+            {
+                overlyDisambiguated = true;
+            }
+        }
+    }
+
+    pieceType = inferPieceType(cleanMove);
+    vector<Move> moves;
+    if (piece != "")
+    {
+        // convert string to char
+        moves = _moves(true, piece[0]);
+    }
+    else
+    {
+        moves = _moves(true, pieceType);
+    }
+    if (to.empty())
+    {
+        return Move();
+    }
+
+    for (int i = 0; i < moves.size(); i++)
+    {
+        if (from.empty())
+        {
+            string ssan = strippedSan(_moveToSan(moves[i], moves));
+
+            if (cleanMove == ssan.replace(ssan.begin(), ssan.end(), 'x', 'y'))
+            {
+                return moves[i];
+            }
+            else if (
+                (!piece.empty() && piece[0] == moves[i].piece) &&
+                from == algebraic(moves[i].from) &&
+                to == algebraic(moves[i].to) &&
+                (promotion.empty() || promotion[0] == moves[i].promotion))
+            {
+                return moves[i];
+            }
+            else if (overlyDisambiguated)
+            {
+                string square = algebraic(moves[i].from);
+                if (
+                    (piece.empty() && tolower(piece[0]) == moves[i].piece) &&
+                    Ox88.at(to) == moves[i].to &&
+                    (from[0] == square[0] || from[0] == square[1]) &&
+                    (promotion.empty() || tolower(promotion[0]) == moves[i].promotion))
+                {
+                    return moves[i];
+                }
+            }
+        }
+    }
+
+    return Move();
+}
+Move ChessEngine::_makePretty(Move uglyMove)
+{
+
+    char color = uglyMove.color;
+    char piece = uglyMove.piece;
+    char flags = uglyMove.flags;
+    int from = uglyMove.from;
+    int to = uglyMove.to;
+    char captured = uglyMove.captured;
+    char promotion = uglyMove.promotion;
+
+    string prettyFlags = "";
+    for (auto flag : BITS)
+    {
+        if (flag.second & flags)
+        {
+            prettyFlags += FLAGS.at(flag.first);
+        }
+    }
+
+    string fromAlgebraic = algebraic(from);
+    string toAlgebraic = algebraic(to);
+
+    Move move;
+    move.color = color;
+    move.piece = piece;
+    move.from = from;
+    move.to = to;
+    move.san = _moveToSan(uglyMove, _moves(true));
+    move.flags = prettyFlags[0];
+    move.lan = fromAlgebraic + toAlgebraic;
+    move.before = fen();
+    move.after = "";
+
+    _makeMove(uglyMove);
+    move.after = fen();
+    _undoMove();
+
+    if (captured)
+    {
+        move.captured = captured;
+    }
+
+    if (promotion)
+    {
+        move.promotion = promotion;
+        move.lan += promotion;
+    }
+
+    return move;
 }
 
 bool  ChessEngine::isAttacked(string square, char attackedBy){
@@ -944,26 +1376,59 @@ vector<Move> ChessEngine::_moves (bool legal=true, std::optional<char> piece = s
 Move ChessEngine::_makePretty(Move uglyMove) {
     char color = uglyMove.color;
     char piece = uglyMove.piece;
-    int flags = uglyMove.flags;
+    char flags = uglyMove.flags;
     int from = uglyMove.from;
     int to = uglyMove.to;
     char captured = uglyMove.captured;
     char promotion = uglyMove.promotion;
 
     string prettyFlags = "";
-
-    for (auto i = BITS.begin(); i != BITS.end(); i++) {
-        if (i->second & flags) {
-            // prettyFlags += FLAGS[flag];
+    for (auto flag : BITS)
+    {
+        if (flag.second & flags)
+        {
+            prettyFlags += FLAGS.at(flag.first);
         }
     }
+
+    string fromAlgebraic = algebraic(from);
+    string toAlgebraic = algebraic(to);
+
+    Move move;
+    move.color = color;
+    move.piece = piece;
+    move.from = from;
+    move.to = to;
+    move.san = _moveToSan(uglyMove, _moves(true));
+    move.flags = prettyFlags[0];
+    move.lan = fromAlgebraic + toAlgebraic;
+    move.before = fen();
+    move.after = "";
+
+    _makeMove(uglyMove);
+    move.after = fen();
+    _undoMove();
+
+    if (captured)
+    {
+        move.captured = captured;
+    }
+
+    if (promotion)
+    {
+        move.promotion = promotion;
+        move.lan += promotion;
+    }
+
+    return move;
 }
 
 char ChessEngine::turn() {
     return _turn;
 }
 
-vector<vector<Row>> ChessEngine::board() {
+vector<vector<ChessEngine::Row>> ChessEngine::board()
+{
     vector<vector<Row>> output;
     vector<Row> row;
     for (int i = 0; i < 129; i++) {
@@ -974,7 +1439,7 @@ vector<vector<Row>> ChessEngine::board() {
             Row tempRow;
             tempRow.square = algebraic(i);
             tempRow.type = _board[i]["type"];
-            tempRow.color = _board[][i]["color"];
+            tempRow.color = _board[i]["color"];
             row.push_back(tempRow);
         }
         if ((i + 1) & 0x88) {
@@ -985,7 +1450,9 @@ vector<vector<Row>> ChessEngine::board() {
     }
 }
 
-int _getPositionCount(string fen) {
+int ChessEngine::_getPositionCount(string fen)
+
+{
     string trimmedFen = trimFen(fen);
     if (_positionCount.find(trimmedFen) != _positionCount.end()) {
         return _positionCount[trimmedFen];
