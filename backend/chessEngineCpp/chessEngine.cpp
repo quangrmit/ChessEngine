@@ -1,4 +1,4 @@
-#include <chessEngine.h>
+#include "chessEngine.h"
 #include <variant>
 
 ChessEngine *chessEngine = nullptr;
