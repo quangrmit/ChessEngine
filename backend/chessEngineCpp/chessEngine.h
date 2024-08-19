@@ -7,12 +7,9 @@
 #include <stdexcept>
 #include <regex>
 #include <optional>
+#include <variant>
 #include "string"
 #include "vector"
-#include <optional>
-#include <variant>
-
-
 
 using std::map;
 using std::string;
@@ -113,11 +110,6 @@ const int RANK_2 = 6;
 const int RANK_7 = 1;
 const int RANK_8 = 0;
 
-const map<char, int>  SECOND_RANK = {
-    {'b', RANK_7},
-    {'2', RANK_2}
-};
-
 const map<char, int> PIECE_MASKS = {
     {'p', 0x1},
     {'n', 0x2},
@@ -145,26 +137,7 @@ const map<char, vector<map<string, int>>> ROOKS = {
 
 const string TERMINATION_MARKERS[4] = {"1-0", "0-1", "1/2-1/2", "*"};
 
-int rank(int square);
-
-int file(int square);
-
-bool isDigit(char c);
-
-string algebraic(int square);
-
-char swapColor(char color);
-
-// true and false are encoded as strings (eg. 'true' , 'false')
-
-struct fenResult
-{
-    bool status;
-    string errorMessage;
-};
-fenResult validateFen(string fen);
-
-string getDisambiguator(Move move, vector<Move> moves);
+const map<char, int> SECOND_RANK = {{'b', RANK_7}, {'w', RANK_2}};
 
 struct Move
 {
@@ -180,6 +153,28 @@ struct Move
     char promotion = '\0';
     char flags;
 };
+
+// true and false are encoded as strings (eg. 'true' , 'false')
+
+struct fenResult
+{
+    bool status;
+    string errorMessage;
+};
+
+int rank(int square);
+
+int file(int square);
+
+bool isDigit(char c);
+
+string algebraic(int square);
+
+char swapColor(char color);
+
+fenResult validateFen(string fen);
+
+string getDisambiguator(Move move, vector<Move> moves);
 
 void addMove(vector<Move> moves, char color, int from, int to, char piece, char captured = '\0', int flags = BITS.at("NORMAL"));
 
@@ -242,7 +237,7 @@ public:
     bool put(map<string, char> config, string square);
     bool _put(map<string, char> config, string square);
 
-    map<string, char> remove(string square);
+    // remove()
 
     void _updateCastlingRights();
 
@@ -253,10 +248,6 @@ public:
     bool _attacked(char color, int square);
 
     bool _isKingAttacked(char color);
-
-    bool isAttacked(string square, char attackedBy);
-
-    bool isCheck();
 
     bool inCheck();
 
@@ -272,10 +263,11 @@ public:
 
     bool isGameOver();
 
-    std::variant<vector<Move>, vector<string>> moves (bool verbose = false, std::optional<string> square=std::nullopt, std::optional<char> piece=std::nullopt);
+    // vector<Move> _moves(vector<Move> moves);
 
-    vector<Move> _moves(bool legal=true, std::optional<char> piece = std::nullopt, std::optional<string> square = std::nullopt);
+    std::variant<vector<Move>, vector<string>> moves(bool verbose = false, std::optional<string> square = std::nullopt, std::optional<char> piece = std::nullopt);
 
+    vector<Move> _moves(bool legal = true, std::optional<char> piece = std::nullopt, std::optional<string> square = std::nullopt);
 
     Move move(map<string, string> move, map<string, bool> config={});
 
@@ -301,6 +293,10 @@ public:
 
     // use the same struct for both pretty and uglymove
     Move _makePretty(Move uglyMove);
+
+    bool isAttacked(string square, char attackedBy);
+
+    bool isCheck();
 
     char turn();
 
