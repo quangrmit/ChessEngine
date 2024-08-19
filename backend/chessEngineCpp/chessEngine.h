@@ -277,7 +277,7 @@ public:
     vector<Move> _moves(bool legal=true, std::optional<char> piece = std::nullopt, std::optional<string> square = std::nullopt);
 
 
-    Move move(map<string, string> move, map<string, bool> config);
+    Move move(map<string, string> move, map<string, bool> config={});
 
     void _push(Move move);
 
