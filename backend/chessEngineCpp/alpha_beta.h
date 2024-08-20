@@ -18,6 +18,8 @@ using std::variant;
 
 // string defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+// map<char, int> material_points = {{'r', 5}, {'n', 3}, {'b', 3}, {'q', 9}, {'p', 1}, {'k', 200}, {'R', 5}, {'N', 3}, {'B', 3}, {'Q', 9}, {'P', 1}, {'K', 200}};
+
 int eval(string fen);
 
 vector<string> split(string s, char del = ' ');

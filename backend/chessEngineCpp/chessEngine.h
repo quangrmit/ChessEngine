@@ -176,7 +176,7 @@ fenResult validateFen(string fen);
 
 string getDisambiguator(Move move, vector<Move> moves);
 
-void addMove(vector<Move> moves, char color, int from, int to, char piece, char captured = '\0', int flags = BITS.at("NORMAL"));
+void addMove(vector<Move> &moves, char color, int from, int to, char piece, char captured = '\0', int flags = BITS.at("NORMAL"));
 
 char inferPieceType(string san);
 
@@ -269,7 +269,7 @@ public:
 
     vector<Move> _moves(bool legal = true, std::optional<char> piece = std::nullopt, std::optional<string> square = std::nullopt);
 
-    Move move(map<string, string> move, map<string, bool> config={});
+    Move move(map<string, string> move, map<string, bool> config = {});
 
     void _push(Move move);
 
