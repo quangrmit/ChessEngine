@@ -1,37 +1,27 @@
-#include <algorithm>
-#include <any>
-#include <limits>
-#include <map>
-#include <sstream>
-#include <string>
-#include <variant>
-#include <vector>
+#include "alpha_beta.h"
 
-#include "chessEngine.h"
-
-using std::map;
-using std::string;
-using std::variant;
-
-string defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-int eval(string fen = defaultFen) {
+int eval(string fen)
+{
     return 0;
 }
 
-vector<string> split(string s, char del = ' ') {
+vector<string> split(string s, char del)
+{
     vector<string> res;
     std::stringstream ss(s);
     string word;
-    while (!ss.eof()) {
+    while (!ss.eof())
+    {
         getline(ss, word, del);
         res.push_back(word);
     }
     return res;
 }
 
-map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth) {
-    if (depth == 0) {
+map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth)
+{
+    if (depth == 0)
+    {
         vector<std::any> noChildren;
         map<string, variant<string, int, vector<std::any>>> obj = {
             {"fen", position},
@@ -42,12 +32,14 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         return obj;
     }
 
-    ChessEngine* c = new ChessEngine(position);
-    if (split(position).at(1) == "w") {
+    ChessEngine *c = new ChessEngine(position);
+    if (split(position).at(1) == "w")
+    {
         int maxScore = -std::numeric_limits<int>::max();
         int count = 0;
         vector<std::any> children = {};
-        for (Move move : c->_moves()) {
+        for (Move move : c->_moves())
+        {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
@@ -68,11 +60,14 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
             {"eval", maxScore},
             {"children", children}};
         return returnMap;
-    } else {
+    }
+    else
+    {
         int minScore = std::numeric_limits<int>::max();
         vector<std::any> children;
 
-        for (Move move : c->_moves()) {
+        for (Move move : c->_moves())
+        {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
@@ -96,10 +91,10 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
     }
 }
 
-
-
-map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string position, int depth, int alpha, int beta) {
-    if (depth == 0) {
+map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string position, int depth, int alpha, int beta)
+{
+    if (depth == 0)
+    {
         vector<std::any> noChildren;
         map<string, variant<string, int, vector<std::any>>> obj = {
             {"fen", position},
@@ -110,12 +105,14 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
         return obj;
     }
 
-    ChessEngine* c = new ChessEngine(position);
-    if (split(position).at(1) == "w") {
+    ChessEngine *c = new ChessEngine(position);
+    if (split(position).at(1) == "w")
+    {
         int maxScore = -std::numeric_limits<int>::max();
         int count = 0;
         vector<std::any> children = {};
-        for (Move move : c->_moves()) {
+        for (Move move : c->_moves())
+        {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
@@ -128,7 +125,8 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             int currScore = std::get<int>(curr.at("eval"));
             int maxScore = std::max(maxScore, currScore);
             alpha = std::max(alpha, currScore);
-            if (beta <= alpha) break;
+            if (beta <= alpha)
+                break;
 
             // Remember to undomove
             c->_undoMove();
@@ -138,11 +136,14 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             {"eval", maxScore},
             {"children", children}};
         return returnMap;
-    } else {
+    }
+    else
+    {
         int minScore = std::numeric_limits<int>::max();
         vector<std::any> children;
 
-        for (Move move : c->_moves()) {
+        for (Move move : c->_moves())
+        {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
@@ -156,7 +157,8 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             int minScore = std::min(minScore, currScore);
 
             beta = std::min(beta, currScore);
-            if (beta <= alpha) break;
+            if (beta <= alpha)
+                break;
 
             // Remember to undomove
             c->_undoMove();

@@ -825,7 +825,7 @@ bool ChessEngine::_isKingAttacked(char color)
     int square = _kings.at(color);
     return square == -1 ? false : _attacked(swapColor(color), square);
 }
-Move ChessEngine::move(map<string, string> move, map<string, bool> config={})
+Move ChessEngine::move(map<string, string> move, map<string, bool> config)
 {
     // remove detect move type to be string, can use variant to fix it
     Move moveObj = Move();
