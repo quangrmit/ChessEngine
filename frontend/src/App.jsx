@@ -4,7 +4,7 @@ import VisualizeTree from "./utils/VisualizeTree";
 function App() {
   return (
     // <Home></Home>
-    <VisualizeTree/>
+    <Home/>
   )
 }
 

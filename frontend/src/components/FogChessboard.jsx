@@ -274,10 +274,10 @@ export default function FogChessboard() {
                 <Chessboard
                     position={fen}
                     onPieceDrop={onDrop}
-                    onSquareClick={onSquareClick}
-                    customSquareStyles={{
-                        ...optionSquares,
-                    }}
+                    // onSquareClick={onSquareClick}
+                    // customSquareStyles={{
+                    //     ...optionSquares,
+                    // }}
                     // customPieces={{
                     //     bK: ({ }) => <div> </div>,
                     //     bQ: ({ }) => <div> </div>,
