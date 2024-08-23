@@ -162,6 +162,17 @@ struct fenResult
     string errorMessage;
 };
 
+struct HistoryMove
+{
+    Move move;
+    map<char, int> kings;
+    char turn;
+    map<char, int> castling;
+    int epSquare;
+    int halfMoves;
+    int moveNumber;
+};
+
 int rank(int square);
 
 int file(int square);
@@ -187,18 +198,10 @@ string trimFen(string fen);
 // Chess Engine Class
 class ChessEngine
 {
-public:
-    struct HistoryMove
-    {
-        Move move;
-        map<char, int> kings;
-        char turn;
-        map<char, int> castling;
-        int epSquare;
-        int halfMoves;
-        int moveNumber;
-    };
+protected:
+    static ChessEngine *sin;
 
+public:
     map<int, map<string, char>> _board;
     char _turn;
     map<string, string> _header;
@@ -210,6 +213,8 @@ public:
     map<string, string> _comments;
     map<char, int> _castling;
     map<string, int> _positionCount;
+
+    static ChessEngine *getInstance(string fen);
 
     ChessEngine();
     ChessEngine(string fen = DEFAULT_POSITION);
@@ -230,11 +235,8 @@ public:
 
     map<string, char> get(string square); // needs reviewing
 
-    // struct _putConfig{
-    //     char type;
-    //     char color;
-    // }
     bool put(map<string, char> config, string square);
+
     bool _put(map<string, char> config, string square);
 
     // remove()

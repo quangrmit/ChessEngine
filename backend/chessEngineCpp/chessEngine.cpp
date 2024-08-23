@@ -235,7 +235,21 @@ string trimFen(string fen)
 
     return result;
 }
+ChessEngine *ChessEngine::sin = nullptr;
+ChessEngine *ChessEngine::getInstance(string fen)
+{
+    if (sin == nullptr)
+    {
+        sin = new ChessEngine(fen);
+    }
+    if (sin->fen() != fen)
+    {
+        sin = new ChessEngine(fen);
+    }
+    // std::cout << sin->fen() << std::endl;
 
+    return sin;
+}
 ChessEngine::ChessEngine() {}
 ChessEngine::~ChessEngine() {}
 
@@ -366,7 +380,6 @@ void ChessEngine::load(string fen, map<string, bool> config)
     }
 
     _turn = tokens[1][0]; // convert from string to char
-
     if (tokens[2].find('K') != string::npos)
     {
         _castling['w'] |= BITS.at("KSIDE_CASTLE");
@@ -871,6 +884,7 @@ void ChessEngine::_push(Move move)
     newMove.epSquare = _epSquare;
     newMove.halfMoves = _halfMoves;
     newMove.moveNumber = _moveNumber;
+    _history.push_back(newMove);
 }
 
 void ChessEngine::_makeMove(Move move)
@@ -949,6 +963,7 @@ void ChessEngine::_makeMove(Move move)
             }
         }
     }
+    // std::cout << "hello" << std::endl;
 
     if (move.flags & BITS.at("BIG_PAWN"))
     {
@@ -1603,7 +1618,7 @@ vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::opt
         }
         _undoMove();
     }
-    std::cout << moves.size() << std::endl;
+    // std::cout << moves.size() << std::endl;
     return legalMoves;
 }
 
@@ -1638,9 +1653,10 @@ Move ChessEngine::_makePretty(Move uglyMove)
     move.flags = prettyFlags[0];
     move.lan = fromAlgebraic + toAlgebraic;
     move.before = fen();
+    // std::cout << move.before << std::endl;
     move.after = "";
-
     _makeMove(uglyMove);
+
     move.after = fen();
     _undoMove();
 

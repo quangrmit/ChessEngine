@@ -2,6 +2,8 @@
 
 #include "alpha_beta.h"
 
+Move chosen = Move();
+
 vector<string> split(string s, char del)
 {
     vector<string> res;
@@ -63,7 +65,7 @@ int eval(string fen)
     return 0;
 }
 
-map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth)
+map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth, int primeDepth)
 {
     if (depth == 0)
     {
@@ -77,24 +79,34 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         return obj;
     }
 
-    ChessEngine *c = new ChessEngine(position);
+    // ChessEngine *c = new ChessEngine(position);
+    ChessEngine *c = ChessEngine::getInstance(position);
     if (split(position).at(1) == "w")
     {
         int maxScore = -std::numeric_limits<int>::max();
         int count = 0;
         vector<std::any> children = {};
-        for (Move move : c->_moves())
+        vector<Move> moves = c->_moves();
+        for (Move move : moves)
         {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
             };
             string newPosition = c->move(moveToMake).after;
-            std::cout << newPosition << std::endl;
-            auto curr = minimax(newPosition, depth - 1);
+            // std::cout << newPosition << std::endl;
+            auto curr = minimax(newPosition, depth - 1, primeDepth);
             children.push_back(curr);
             int currScore = std::get<int>(curr.at("eval"));
-            int maxScore = std::max(maxScore, currScore);
+            if (currScore > maxScore)
+            {
+                maxScore = currScore;
+                if (depth == primeDepth)
+                {
+                    chosen = move;
+                }
+            }
+            // int maxScore = std::max(maxScore, currScore);
 
             // Remember to undomove
             c->_undoMove();
@@ -120,10 +132,18 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
             string newPosition = c->move(
                                       moveToMake)
                                      .after;
-            auto curr = minimax(newPosition, depth - 1);
+            auto curr = minimax(newPosition, depth - 1, primeDepth);
             children.push_back(curr);
             int currScore = std::get<int>(curr.at("eval"));
-            int minScore = std::min(minScore, currScore);
+            if (currScore < minScore)
+            {
+                minScore = currScore;
+                if (depth == primeDepth)
+                {
+                    chosen = move;
+                }
+            }
+            // int minScore = std::min(minScore, currScore);
 
             // Remember to undomove
             c->_undoMove();
@@ -136,6 +156,7 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
     }
 }
 
+// Alpha pruning not complete
 map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string position, int depth, int alpha, int beta)
 {
     if (depth == 0)
@@ -165,7 +186,7 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             string newPosition = c->move(
                                       moveToMake)
                                      .after;
-            auto curr = minimax(newPosition, depth - 1);
+            auto curr = minimax(newPosition, depth - 1, 2);
             children.push_back(curr);
             int currScore = std::get<int>(curr.at("eval"));
             int maxScore = std::max(maxScore, currScore);
@@ -196,7 +217,7 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             string newPosition = c->move(
                                       moveToMake)
                                      .after;
-            auto curr = minimax(newPosition, depth - 1);
+            auto curr = minimax(newPosition, depth - 1, 2);
             children.push_back(curr);
             int currScore = std::get<int>(curr.at("eval"));
             int minScore = std::min(minScore, currScore);
@@ -214,4 +235,34 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             {"children", children}};
         return returnMap;
     }
+}
+
+// BestMove minimax(string position, int depth, int dummy)
+// {
+// }
+
+Move bestMove(string fen)
+{
+    ChessEngine *c = ChessEngine::getInstance(fen);
+    // int depth = 3;
+    // BestMove res = minimax(fen, depth, 0);
+    // if (res.move.color == '\0')
+    // {
+    //     vector<Move> moves = c->_moves();
+    //     return moves[]
+    // }
+    // choose move
+    // std::cout << c->fen() << std::endl;
+
+    // Find best move
+    int depth = 2;
+    auto result = minimax(fen, depth, depth);
+    if (chosen.color != '\0')
+    {
+        return c->_makePretty(chosen);
+    }
+
+    vector<Move> moves = c->_moves();
+    Move res = c->_makePretty(moves[moves.size() - 1]);
+    return res;
 }

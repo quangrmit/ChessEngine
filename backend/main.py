@@ -16,11 +16,12 @@ def move():
     # data = request.get_json()
     print("Run C++ files")
     res = subprocess.run(['D:\personalProject\FogOfWar-AI\\backend\\chessEngineCpp\main.exe', request.args.get("fen")], capture_output=True).stdout.decode()
+    print("hello world")
     print(request.args.get("fen"))
     print(res)
     return {
-        'from': 'e7',
-        'to': 'e6'
+        'from': res[0:2],
+        'to':  res[2:4]
     }
 
 @app.route('/api/engine/test', methods = ['POST', 'GET'])

@@ -101,9 +101,9 @@ export default function FogChessboard() {
 
     useEffect(() => {
         setOptionSquares(fog(fogSquares));
-        console.log(fogSquares);
-        console.log(possibleMovesSquares);
-        console.log(whitePieceSquares);
+        // console.log(fogSquares);
+        // console.log(possibleMovesSquares);
+        // console.log(whitePieceSquares);
     }, [possibleMovesSquares]);
 
     useEffect(() => {
