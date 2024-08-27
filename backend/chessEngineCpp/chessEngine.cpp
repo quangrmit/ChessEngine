@@ -1,5 +1,6 @@
 #include "chessEngine.h"
 #include <variant>
+#include <iostream>
 
 ChessEngine *chessEngine = nullptr;
 
@@ -15,7 +16,7 @@ int file(int square)
 
 bool isDigit(char c)
 {
-    return isDigit(c);
+    return isdigit(c);
 }
 
 string algebraic(int square)
@@ -154,7 +155,7 @@ string getDisambiguator(Move move, vector<Move> moves)
     return "";
 }
 
-void addMove(vector<Move> moves, char color, int from, int to, char piece, char captured, int flags)
+void addMove(vector<Move> &moves, char color, int from, int to, char piece, char captured, int flags)
 {
     int r = rank(to);
     if (piece == PAWN && (r == RANK_1 || r == RANK_8))
@@ -825,7 +826,7 @@ bool ChessEngine::_isKingAttacked(char color)
     int square = _kings.at(color);
     return square == -1 ? false : _attacked(swapColor(color), square);
 }
-Move ChessEngine::move(map<string, string> move, map<string, bool> config={})
+Move ChessEngine::move(map<string, string> move, map<string, bool> config)
 {
     // remove detect move type to be string, can use variant to fix it
     Move moveObj = Move();
@@ -836,8 +837,13 @@ Move ChessEngine::move(map<string, string> move, map<string, bool> config={})
     vector<Move> moves = _moves();
     for (int i = 0; i < moves.size(); i++)
     {
+        // std::cout << "starting" << std::endl;
+        // std::cout << move["from"] << " " << algebraic(moves[i].from) << std::endl;
+        // std::cout << move["to"] << " " << algebraic(moves[i].to) << std::endl;
+        // std::cout << move["promotion"][0] << " " << moves[i].promotion << std::endl;
+
         if (move["from"] == algebraic(moves[i].from) && move["to"] == algebraic(moves[i].to) &&
-            (!(moves[i].promotion != '\0') || move["promotion"][0] == moves[i].promotion))
+            ((moves[i].promotion == '\0') || move["promotion"][0] == moves[i].promotion))
         {
             moveObj = moves[i];
             break;
@@ -1393,6 +1399,7 @@ std::variant<vector<Move>, vector<string>> ChessEngine::moves(bool verbose, std:
 
 vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::optional<string> square)
 {
+
     string forSquare;
 
     if (square)
@@ -1409,7 +1416,7 @@ vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::opt
     {
         forPiece = tolower(piece.value());
     }
-    vector<Move> moves;
+    vector<Move> moves = {};
     char us = _turn;
     char them = swapColor(us);
     int firstSquare = Ox88.at("a8");
@@ -1454,7 +1461,7 @@ vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::opt
                 addMove(moves, us, from, to, PAWN);
 
                 to = from + PAWN_OFFSETS.at(us).at(1);
-                if (SECOND_RANK.at(us) == rank(from))
+                if (SECOND_RANK.at(us) == rank(from) && _board.find(to) == _board.end())
                 {
                     addMove(
                         moves,
@@ -1586,7 +1593,7 @@ vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::opt
         return moves;
     }
 
-    vector<Move> legalMoves;
+    vector<Move> legalMoves = {};
     for (int i = 0, len = moves.size(); i < len; i++)
     {
         _makeMove(moves.at(i));
@@ -1596,6 +1603,7 @@ vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::opt
         }
         _undoMove();
     }
+    std::cout << moves.size() << std::endl;
     return legalMoves;
 }
 
