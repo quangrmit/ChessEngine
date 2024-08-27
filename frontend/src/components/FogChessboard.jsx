@@ -1,4 +1,4 @@
-import Chess from "../modules/Chess";
+// import Chess from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
 

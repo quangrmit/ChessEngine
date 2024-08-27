@@ -151,7 +151,8 @@ struct Move
     char piece = '\0';
     char captured = '\0';
     char promotion = '\0';
-    char flags;
+    // char flags;
+    int flags;
 };
 
 // true and false are encoded as strings (eg. 'true' , 'false')
@@ -211,7 +212,7 @@ public:
     map<char, int> _castling;
     map<string, int> _positionCount;
 
-    ChessEngine();
+    // ChessEngine();
     ChessEngine(string fen = DEFAULT_POSITION);
 
     ~ChessEngine();
@@ -271,7 +272,10 @@ public:
 
     Move move(map<string, string> move, map<string, bool> config = {});
 
-    void _push(Move move);
+    Move move(vector<Move> moves, map<string, string> move, map<string, bool> config = {});
+
+
+void _push(Move move);
 
     void _makeMove(Move move);
 

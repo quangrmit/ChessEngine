@@ -223,7 +223,7 @@ function isDigit(c) {
   return "0123456789".indexOf(c) !== -1;
 }
 // Converts a 0x88 square to algebraic notation.
-function algebraic(square) {
+export function algebraic(square) {
   const f = file(square);
   const r = rank(square);
   return "abcdefgh".substring(f, f + 1) + "87654321".substring(r, r + 1);
@@ -1102,6 +1102,9 @@ class Chess {
       moveObj = this._moveFromSan(move, strict);
     } else if (typeof move === "object") {
       const moves = this._moves();
+
+      console.log("here is moves length")
+      console.log(moves.length)
       // convert the pretty move object to an ugly move object
       for (let i = 0, len = moves.length; i < len; i++) {
         if (

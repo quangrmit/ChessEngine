@@ -1,34 +1,30 @@
-#include <iostream>
-
 #include "alpha_beta.h"
 
-vector<string> split(string s, char del)
-{
+#include <iostream>
+
+#include "chessEngine.h"
+
+vector<string> split(string s, char del) {
     vector<string> res;
     std::stringstream ss(s);
     string word;
-    while (!ss.eof())
-    {
+    while (!ss.eof()) {
         getline(ss, word, del);
         res.push_back(word);
     }
     return res;
 }
 
-int eval(string fen)
-{
+int eval(string fen) {
     map<char, int> materialPoints = {{'r', 5}, {'n', 3}, {'b', 3}, {'q', 9}, {'p', 1}, {'k', 200}, {'R', 5}, {'N', 3}, {'B', 3}, {'Q', 9}, {'P', 1}, {'K', 200}};
 
     int materialWeight = 0;
     int numWhitePieces = 0;
     int numBlackPieces = 0;
     int turn;
-    if (split(fen)[1][0] == 'w')
-    {
+    if (split(fen)[1][0] == 'w') {
         turn = 1;
-    }
-    else
-    {
+    } else {
         turn = -1;
     }
     int whiteMaterialWeight = 0;
@@ -38,23 +34,17 @@ int eval(string fen)
         return 0;
     vector<string> materials = split(split(fen)[0], '/');
     string allMaterial = "";
-    for (string material : materials)
-    {
+    for (string material : materials) {
         allMaterial += material;
     }
-    for (char c : allMaterial)
-    {
-        if (isDigit(c))
-        {
+    for (char c : allMaterial) {
+        if (isDigit(c)) {
             continue;
         }
-        if (isupper(c))
-        {
+        if (isupper(c)) {
             numWhitePieces += 1;
             whiteMaterialWeight += materialPoints[c];
-        }
-        else
-        {
+        } else {
             numBlackPieces += 1;
             blackMaterialWeight += materialPoints[c];
         }
@@ -63,10 +53,8 @@ int eval(string fen)
     return 0;
 }
 
-map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth)
-{
-    if (depth == 0)
-    {
+map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth) {
+    if (depth == 0) {
         vector<std::any> noChildren;
         map<string, variant<string, int, vector<std::any>>> obj = {
             {"fen", position},
@@ -76,20 +64,31 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         };
         return obj;
     }
+    ChessEngine* c;
+    vector<Move> moves;
 
-    ChessEngine *c = new ChessEngine(position);
-    if (split(position).at(1) == "w")
-    {
+    try {
+        c = new ChessEngine(position);
+        moves = c->_moves();
+    }catch(...){
+        std::cout << "error starts here";
+    }
+
+    if (split(position).at(1) == "w") {
+
+        
         int maxScore = -std::numeric_limits<int>::max();
         int count = 0;
         vector<std::any> children = {};
-        for (Move move : c->_moves())
-        {
+
+
+
+        for (Move move : moves) {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
             };
-            string newPosition = c->move(moveToMake).after;
+            string newPosition = c->move(moves, moveToMake).after;
             std::cout << newPosition << std::endl;
             auto curr = minimax(newPosition, depth - 1);
             children.push_back(curr);
@@ -104,20 +103,20 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
             {"eval", maxScore},
             {"children", children}};
         return returnMap;
-    }
-    else
-    {
+
+
+
+    } else {
         int minScore = std::numeric_limits<int>::max();
         vector<std::any> children;
 
-        for (Move move : c->_moves())
-        {
-
+        for (Move move : moves) {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
             };
             string newPosition = c->move(
+                                      moves,
                                       moveToMake)
                                      .after;
             auto curr = minimax(newPosition, depth - 1);
@@ -134,12 +133,13 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
             {"children", children}};
         return returnMap;
     }
+
+
+
 }
 
-map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string position, int depth, int alpha, int beta)
-{
-    if (depth == 0)
-    {
+map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string position, int depth, int alpha, int beta) {
+    if (depth == 0) {
         vector<std::any> noChildren;
         map<string, variant<string, int, vector<std::any>>> obj = {
             {"fen", position},
@@ -151,13 +151,11 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
     }
 
     ChessEngine *c = new ChessEngine(position);
-    if (split(position).at(1) == "w")
-    {
+    if (split(position).at(1) == "w") {
         int maxScore = -std::numeric_limits<int>::max();
         int count = 0;
         vector<std::any> children = {};
-        for (Move move : c->_moves())
-        {
+        for (Move move : c->_moves()) {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
@@ -181,14 +179,11 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             {"eval", maxScore},
             {"children", children}};
         return returnMap;
-    }
-    else
-    {
+    } else {
         int minScore = std::numeric_limits<int>::max();
         vector<std::any> children;
 
-        for (Move move : c->_moves())
-        {
+        for (Move move : c->_moves()) {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
