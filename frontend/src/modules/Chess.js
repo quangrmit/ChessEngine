@@ -314,12 +314,12 @@ function validateFen(fen) {
     }
   }
   // 9th criterion: is en-passant square legal?
-  if (
-    (tokens[3][1] == "3" && tokens[1] == "w") ||
-    (tokens[3][1] == "6" && tokens[1] == "b")
-  ) {
-    return { ok: false, error: "Invalid FEN: illegal en-passant square" };
-  }
+  // if (
+  //   (tokens[3][1] == "3" && tokens[1] == "w") ||
+  //   (tokens[3][1] == "6" && tokens[1] == "b")
+  // ) {
+  //   return { ok: false, error: "Invalid FEN: illegal en-passant square" };
+  // }
   // 10th criterion: does chess position contain exact two kings?
   const kings = [
     { color: "white", regex: /K/g },
@@ -757,7 +757,7 @@ class Chess {
       !(square & 0x88) &&
       this._board[square]?.color === this._turn &&
       this._board[square]?.type === exports.PAWN;
-      
+
     if (!attackers.some(canCapture)) {
       this._epSquare = EMPTY;
     }

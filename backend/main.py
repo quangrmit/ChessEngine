@@ -1,4 +1,4 @@
-from flask import Flask, Response, request
+from flask import Flask, Response, request, make_response
 from flask_cors import CORS, cross_origin
 import os, subprocess
 from chessEngine import Chessjs
@@ -15,12 +15,27 @@ chess = Chessjs.Chess()
 def move():
     # data = request.get_json()
     print("Run C++ files")
-    res = subprocess.run(['D:\personalProject\FogOfWar-AI\\backend\\chessEngineCpp\main.exe', request.args.get("fen")], capture_output=True).stdout.decode()
+
+    res = subprocess.run(['.\\chessEngineCpp\\main.exe', request.args.get("fen")], capture_output=True).stdout.decode()
+    
+    # res = subprocess.run(['C:\\Users\\Lenovo\\OneDrive\\desktop\\FogOfWar-AI\\backend\\chessEngineCpp\\main.exe', request.args.get("fen")], capture_output=True).stdout.decode()
+
+    print("hello world")
     print(request.args.get("fen"))
     print(res)
+
+    # data = {
+    #     'from': res[0:2],
+    #     'to': res[2:4]
+    # }
+    # response = make_response((data))
+    # response.headers['Content-Type'] = 'application/json'
+    # response.headers['Access-Control-Allow-Origin'] = '*'
+    # return response
+
     return {
-        'from': 'e7',
-        'to': 'e6'
+        'from': res[0:2],
+        'to':  res[2:4]
     }
 
 @app.route('/api/engine/test', methods = ['POST', 'GET'])

@@ -1,7 +1,7 @@
 // import Chess from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
-
+import Chess from "../modules/Chess.js";
 import React, { useEffect, useState } from "react";
 import WinDialog from "./WinDialog";
 import Sidebar from "./Sidebar";
@@ -101,9 +101,9 @@ export default function FogChessboard() {
 
     useEffect(() => {
         setOptionSquares(fog(fogSquares));
-        console.log(fogSquares);
-        console.log(possibleMovesSquares);
-        console.log(whitePieceSquares);
+        // console.log(fogSquares);
+        // console.log(possibleMovesSquares);
+        // console.log(whitePieceSquares);
     }, [possibleMovesSquares]);
 
     useEffect(() => {
