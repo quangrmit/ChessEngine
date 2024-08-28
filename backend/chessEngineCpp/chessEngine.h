@@ -248,6 +248,8 @@ public:
 
     void _updateEnPassantSquare();
 
+    bool _attacked(char color,int from,  int square);
+
     bool _attacked(char color, int square);
 
     bool _isKingAttacked(char color);

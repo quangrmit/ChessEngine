@@ -14,6 +14,43 @@ vector<string> split(string s, char del)
     return res;
 }
 
+int centerControl(char color, std::string fen) {
+    int center[4] = {
+        Ox88.at("e4"),
+        Ox88.at("e5"),
+        Ox88.at("d4"),
+        Ox88.at("d5"),
+    };
+
+    int count = 0;
+
+    // split and change the fen for move generation
+    vector<string> sp = split(fen, ' ');
+
+    sp[1] = string(1, color);
+
+    string res = sp[0];
+
+    for (int i = 1; i < sp.size(); i++) {
+        res += " ";
+        res += sp[i];
+    }
+
+    ChessEngine c = ChessEngine(res);
+    vector<Move> moves = c._moves();
+
+    for (Move move : moves) {
+        int currPiecePos = move.from;
+        for(int s : center){
+            if (c._attacked(color, currPiecePos, s)){
+                count ++;
+            }
+        }
+    }
+
+    return count;
+}
+
 int eval(string fen) {
     map<char, int> materialPoints = {{'r', 5}, {'n', 3}, {'b', 3}, {'q', 9}, {'p', 1}, {'k', 200}, {'R', 5}, {'N', 3}, {'B', 3}, {'Q', 9}, {'P', 1}, {'K', 200}};
 

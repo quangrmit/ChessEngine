@@ -26,6 +26,8 @@ using std::variant;
 
 extern Move chosen;
 
+int centerControl(char color, string fen);
+
 int eval(string fen);
 
 vector<string> split(string s, char del = ' ');

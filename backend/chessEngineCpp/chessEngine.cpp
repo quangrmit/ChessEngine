@@ -643,6 +643,56 @@ void ChessEngine::_updateEnPassantSquare() {
     }
 }
 
+bool ChessEngine::_attacked(char color, int from, int square) {
+    int i = from;
+    if (i & 0x88) {
+        i += 7;
+    }
+    if (_board.find(i) == _board.end() || _board.at(i).at("color") != color) {
+        // continue;
+        return false;
+    }
+
+    const map<string, char> piece = _board.at(i);
+    const int difference = i - square;
+
+    if (difference == 0) {
+        return false;
+        // continue;
+    }
+
+    const int index = difference + 119;
+
+    if (ATTACKS[index] & PIECE_MASKS.at(piece.at("type"))) {
+        if (piece.at("type") == PAWN) {
+            if (difference > 0) {
+                if (piece.at("color") == WHITE)
+                    return true;
+            } else {
+                if (piece.at("color") == BLACK)
+                    return true;
+            }
+            // continue;
+            return false;
+        }
+        if (piece.at("type") == 'n' || piece.at("type") == 'k')
+            return true;
+        const int offset = RAYS[index];
+        int j = i + offset;
+        bool blocked = false;
+        while (j != square) {
+            if (_board.find(j) != _board.end()) {
+                blocked = true;
+                break;
+            }
+            j += offset;
+        }
+        if (!blocked)
+            return true;
+    }
+    return false;
+}
+
 bool ChessEngine::_attacked(char color, int square) {
     for (int i = Ox88.at("a8"); i <= Ox88.at("h1"); i++) {
         if (i & 0x88) {
