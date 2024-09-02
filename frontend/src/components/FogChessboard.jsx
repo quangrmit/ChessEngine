@@ -1,4 +1,3 @@
-// import Chess from "../modules/Chess";
 import { Chessboard } from "react-chessboard";
 import Clock from "./Clock";
 import Chess from "../modules/Chess.js";
@@ -167,7 +166,9 @@ export default function FogChessboard() {
             return result;
         } catch (e) {
             // console.log(e) // Information of incorrect move
+            
             console.log("Invalid move");
+            console.log(move);
             return null;
         }
     }

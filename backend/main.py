@@ -1,14 +1,12 @@
 from flask import Flask, Response, request, make_response
 from flask_cors import CORS, cross_origin
 import os, subprocess
-from chessEngine import Chessjs
 
 app = Flask(__name__)
 cors = CORS(app=app)
 app.config['Access-Control-Allow-Origin'] = '*'
 
 ## Initialize chess engine 
-chess = Chessjs.Chess()
 
 
 @app.route('/api/engine', methods = ['GET'])
@@ -22,6 +20,7 @@ def move():
 
     print("hello world")
     print(request.args.get("fen"))
+    print("here")
     print(res)
 
     # data = {

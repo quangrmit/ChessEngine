@@ -153,6 +153,7 @@ struct Move
     char promotion = '\0';
     // char flags;
     int flags;
+
 };
 
 // true and false are encoded as strings (eg. 'true' , 'false')
@@ -279,7 +280,7 @@ public:
     Move move(vector<Move> moves, map<string, string> move, map<string, bool> config = {});
 
 
-void _push(Move move);
+    void _push(Move move);
 
     void _makeMove(Move move);
 

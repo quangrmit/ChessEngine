@@ -807,9 +807,9 @@ class Chess {
     return false;
   }
   _isKingAttacked(color) {
-    // const square = this._kings[color];
-    // return square === -1 ? false : this._attacked(swapColor(color), square);
-    return false;
+    const square = this._kings[color];
+    return square === -1 ? false : this._attacked(swapColor(color), square);
+    // return false;
   }
   isAttacked(square, attackedBy) {
     return this._attacked(attackedBy, Ox88[square]);
@@ -1073,14 +1073,21 @@ class Chess {
       return moves;
     }
     // filter out illegal moves
+
+
+
+
+
     const legalMoves = [];
     for (let i = 0, len = moves.length; i < len; i++) {
       this._makeMove(moves[i]);
+
       if (!this._isKingAttacked(us)) {
         legalMoves.push(moves[i]);
       }
       this._undoMove();
     }
+
     return legalMoves;
   }
   move(move, { strict = false } = {}) {

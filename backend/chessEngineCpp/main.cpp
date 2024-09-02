@@ -7,6 +7,8 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    
+    // string test = "3Rkbnr/ppp1pppp/8/8/4P3/2N2N2/PPP2PPP/R1B3K1 b - - 0 13";
     // string fen = argv[1];
     // map<string, variant<string, int, vector<any>>> res = minimax(fen, 10);
     // cout << get<string>(res["fen"]) << " " << "" << endl;
@@ -19,7 +21,14 @@ int main(int argc, char *argv[])
         fen += " ";
     }
     fen.pop_back();
+
+
     Move move = bestMove(fen);
+
+
+
+
+
     cout << move.lan << endl;
 
     return 0;

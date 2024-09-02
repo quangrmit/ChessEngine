@@ -115,12 +115,25 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         // vector<Move> moves = c->_moves();
         for (Move move : moves)
         {
+
+
+            map<string, char> piece = c->_board.at(move.from);
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
+                {"color", string(1, move.color)},
+                {"piece", string(1, move.piece)},
+                {"captured", string(1, move.captured)},
+                {"promotion", string(1, move.promotion)},
+                {"san", move.san},
+                {"lan", move.lan}, 
+                {"before", move.before},
+                {"after", move.after},
+                {"flags", std::to_string(move.flags)}
+
             };
-            string newPosition = c->move(moveToMake).after;
-            // std::cout << newPosition << std::endl;
+            string newPosition = c->move(moves, moveToMake).after;
+
             auto curr = minimax(newPosition, depth - 1, primeDepth);
             children.push_back(curr);
             int currScore = std::get<int>(curr.at("eval"));
@@ -150,15 +163,31 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         vector<std::any> children;
 
         for (Move move : moves) {
+
+            map<string, char> piece = c->_board.at(move.from);
+
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
+                {"color", string(1, move.color)},
+                {"piece", string(1, move.piece)},
+                {"captured", string(1, move.captured)},
+                {"promotion", string(1, move.promotion)},
+                {"san", move.san},
+                {"lan", move.lan}, 
+                {"before", move.before},
+                {"after", move.after},
+                {"flags", std::to_string(move.flags)}
+
             };
             string newPosition = c->move(
                                       moves,
                                       moveToMake)
                                      .after;
-            auto curr = minimax(newPosition, depth - 1, primeDepth);
+
+            auto curr = minimax(newPosition, depth   - 1, primeDepth);
+
+
             children.push_back(curr);
             int currScore = std::get<int>(curr.at("eval"));
             if (currScore < minScore)
@@ -279,14 +308,15 @@ Move bestMove(string fen)
     // std::cout << c->fen() << std::endl;
 
     // Find best move
-    int depth = 2;
+    int depth = 3;
+    vector<Move> moves = c->_moves();
+
     auto result = minimax(fen, depth, depth);
     if (chosen.color != '\0')
     {
         return c->_makePretty(chosen);
     }
 
-    vector<Move> moves = c->_moves();
     Move res = c->_makePretty(moves[moves.size() - 1]);
     return res;
 }
