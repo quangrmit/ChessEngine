@@ -7,14 +7,16 @@ vector<string> split(string s, char del)
     vector<string> res;
     std::stringstream ss(s);
     string word;
-    while (!ss.eof()) {
+    while (!ss.eof())
+    {
         getline(ss, word, del);
         res.push_back(word);
     }
     return res;
 }
 
-int centerControl(char color, std::string fen) {
+int centerControl(char color, std::string fen)
+{
     int center[4] = {
         Ox88.at("e4"),
         Ox88.at("e5"),
@@ -31,7 +33,8 @@ int centerControl(char color, std::string fen) {
 
     string res = sp[0];
 
-    for (int i = 1; i < sp.size(); i++) {
+    for (int i = 1; i < sp.size(); i++)
+    {
         res += " ";
         res += sp[i];
     }
@@ -39,11 +42,14 @@ int centerControl(char color, std::string fen) {
     ChessEngine c = ChessEngine(res);
     vector<Move> moves = c._moves();
 
-    for (Move move : moves) {
+    for (Move move : moves)
+    {
         int currPiecePos = move.from;
-        for(int s : center){
-            if (c._attacked(color, currPiecePos, s)){
-                count ++;
+        for (int s : center)
+        {
+            if (c._attacked(color, currPiecePos, s))
+            {
+                count++;
             }
         }
     }
@@ -51,16 +57,20 @@ int centerControl(char color, std::string fen) {
     return count;
 }
 
-int eval(string fen) {
+int eval(string fen)
+{
     map<char, int> materialPoints = {{'r', 5}, {'n', 3}, {'b', 3}, {'q', 9}, {'p', 1}, {'k', 200}, {'R', 5}, {'N', 3}, {'B', 3}, {'Q', 9}, {'P', 1}, {'K', 200}};
 
     int materialWeight = 0;
     int numWhitePieces = 0;
     int numBlackPieces = 0;
     int turn;
-    if (split(fen)[1][0] == 'w') {
+    if (split(fen)[1][0] == 'w')
+    {
         turn = 1;
-    } else {
+    }
+    else
+    {
         turn = -1;
     }
     int whiteMaterialWeight = 0;
@@ -70,17 +80,23 @@ int eval(string fen) {
         return 0;
     vector<string> materials = split(split(fen)[0], '/');
     string allMaterial = "";
-    for (string material : materials) {
+    for (string material : materials)
+    {
         allMaterial += material;
     }
-    for (char c : allMaterial) {
-        if (isDigit(c)) {
+    for (char c : allMaterial)
+    {
+        if (isDigit(c))
+        {
             continue;
         }
-        if (isupper(c)) {
+        if (isupper(c))
+        {
             numWhitePieces += 1;
             whiteMaterialWeight += materialPoints[c];
-        } else {
+        }
+        else
+        {
             numBlackPieces += 1;
             blackMaterialWeight += materialPoints[c];
         }
@@ -116,7 +132,6 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         for (Move move : moves)
         {
 
-
             map<string, char> piece = c->_board.at(move.from);
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
@@ -126,7 +141,7 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
                 {"captured", string(1, move.captured)},
                 {"promotion", string(1, move.promotion)},
                 {"san", move.san},
-                {"lan", move.lan}, 
+                {"lan", move.lan},
                 {"before", move.before},
                 {"after", move.after},
                 {"flags", std::to_string(move.flags)}
@@ -140,6 +155,8 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
             if (currScore > maxScore)
             {
                 maxScore = currScore;
+                std::cout << "Max score here" << std::endl;
+                std::cout << maxScore << std::endl;
                 if (depth == primeDepth)
                 {
                     chosen = move;
@@ -155,14 +172,14 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
             {"eval", maxScore},
             {"children", children}};
         return returnMap;
-
-
-
-    } else {
+    }
+    else
+    {
         int minScore = std::numeric_limits<int>::max();
         vector<std::any> children;
 
-        for (Move move : moves) {
+        for (Move move : moves)
+        {
 
             map<string, char> piece = c->_board.at(move.from);
 
@@ -174,7 +191,7 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
                 {"captured", string(1, move.captured)},
                 {"promotion", string(1, move.promotion)},
                 {"san", move.san},
-                {"lan", move.lan}, 
+                {"lan", move.lan},
                 {"before", move.before},
                 {"after", move.after},
                 {"flags", std::to_string(move.flags)}
@@ -185,12 +202,11 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
                                       moveToMake)
                                      .after;
 
-            auto curr = minimax(newPosition, depth   - 1, primeDepth);
-
+            auto curr = minimax(newPosition, depth - 1, primeDepth);
 
             children.push_back(curr);
             int currScore = std::get<int>(curr.at("eval"));
-            if (currScore < minScore)
+            if (currScore <= minScore)
             {
                 minScore = currScore;
                 if (depth == primeDepth)
@@ -209,9 +225,6 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
             {"children", children}};
         return returnMap;
     }
-
-
-
 }
 
 // Alpha pruning not complete
@@ -230,11 +243,13 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
     }
 
     ChessEngine *c = new ChessEngine(position);
-    if (split(position).at(1) == "w") {
+    if (split(position).at(1) == "w")
+    {
         int maxScore = -std::numeric_limits<int>::max();
         int count = 0;
         vector<std::any> children = {};
-        for (Move move : c->_moves()) {
+        for (Move move : c->_moves())
+        {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
@@ -258,11 +273,14 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
             {"eval", maxScore},
             {"children", children}};
         return returnMap;
-    } else {
+    }
+    else
+    {
         int minScore = std::numeric_limits<int>::max();
         vector<std::any> children;
 
-        for (Move move : c->_moves()) {
+        for (Move move : c->_moves())
+        {
             map<string, string> moveToMake = {
                 {"from", algebraic(move.from)},
                 {"to", algebraic(move.to)},
@@ -310,7 +328,6 @@ Move bestMove(string fen)
     // Find best move
     int depth = 3;
     vector<Move> moves = c->_moves();
-
     auto result = minimax(fen, depth, depth);
     if (chosen.color != '\0')
     {
