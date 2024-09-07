@@ -9,6 +9,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <chrono>
 
 // random move generation
 // #include <ctime>
@@ -26,15 +27,34 @@ using std::variant;
 
 extern Move chosen;
 
-int centerControl(char color, string fen);
+int perft(int depth);
+
+void printMap(const map<string, int>& m);
+
+int spacialAdvantageWithColor(char color, string fen);
+
+int spacialAdvantage(string fen);
+
+int centerControlWithColor(char color, string fen);
+
+int centerControl(string fen);
+
+int materialEval(string fen);
 
 int eval(string fen);
 
+string fenToKey(const string& fen);
+
 vector<string> split(string s, char del = ' ');
 
-map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth, int primeDepth);
+map<string, variant<string, int, vector<std::any>>> minimax(string position, int depth, int primeDepth, map<string, int>& transTable, int& countNodes);
 
-map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string position, int depth, int alpha, int beta);
+
+map<string, variant<string, int, vector<std::any>>> minimaxHeap(string position, int depth, int primeDepth, map<string, int>& transTable, int& countNodes);
+
+
+
+map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string position, int depth, int primeDepth, map<string, int>& transTable,int& countNodes, int alpha=std::numeric_limits<int>::min(), int beta=std::numeric_limits<int>::max());
 
 // test call from js
 struct BestMove
@@ -45,6 +65,9 @@ struct BestMove
 
 // BestMove minimax(string position, int depth, int dummy);
 
-Move bestMove(string fen);
+Move bestMove(string fen, int depth);
+Move bestMoveHeap(string fen, int depth);
+
+Move bestMoveAB(string fen, int depth);
 
 #endif

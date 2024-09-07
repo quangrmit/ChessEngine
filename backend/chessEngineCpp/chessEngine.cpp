@@ -203,7 +203,10 @@ ChessEngine *ChessEngine::getInstance(string fen) {
     return sin;
 }
 ChessEngine::ChessEngine() {}
-ChessEngine::~ChessEngine() {}
+ChessEngine::~ChessEngine() {
+    // std::cout << "Deallocated" << std::endl;
+    // delete sin;
+}
 
 ChessEngine::ChessEngine(string fen) {
     _board = {};
@@ -676,6 +679,9 @@ bool ChessEngine::_attacked(char color, int from, int square) {
 
 bool ChessEngine::_attacked(char color, int square) {
     for (int i = Ox88.at("a8"); i <= Ox88.at("h1"); i++) {
+             auto start1 = std::chrono::high_resolution_clock::now();
+
+
         if (i & 0x88) {
             i += 7;
             continue;
@@ -719,12 +725,17 @@ bool ChessEngine::_attacked(char color, int square) {
             if (!blocked)
                 return true;
         }
+    auto stop1 = std::chrono::high_resolution_clock::now();
+
+    auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(stop1 - start1);
+ 
     }
     return false;
 }
 
 bool ChessEngine::_isKingAttacked(char color) {
     int square = _kings.at(color);
+
     return square == -1 ? false : _attacked(swapColor(color), square);
 }
 Move ChessEngine::move(map<string, string> move, map<string, bool> config) {
@@ -1248,6 +1259,8 @@ std::variant<vector<Move>, vector<string>> ChessEngine::moves(bool verbose, std:
 }
 
 vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::optional<string> square) {
+
+
     string forSquare;
 
     if (square) {
@@ -1403,9 +1416,11 @@ vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::opt
             }
         }
     }
+    
     if (!legal || _kings.at(us) == -1) {
         return moves;
     }
+    
 
     vector<Move> legalMoves = {};
     for (int i = 0, len = moves.size(); i < len; i++) {
@@ -1416,6 +1431,7 @@ vector<Move> ChessEngine::_moves(bool legal, std::optional<char> piece, std::opt
         } 
         _undoMove();
     }
+
 
     return legalMoves;
 }

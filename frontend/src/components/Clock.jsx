@@ -41,7 +41,7 @@ function Clock({ isWhite, ticking }) {
         <div className="clock-container">
             <div className="clock" style={clockStyle}>
                 <div>
-                    <span>{formatTime(minutes)}</span>:<span>{formatTime(seconds)}</span>
+                    <span>{formatTime(30)}</span>:<span>{formatTime(seconds)}</span>
                 </div>
             </div>
         </div>
