@@ -6,7 +6,8 @@ vector<string> split(string s, char del) {
     vector<string> res;
     std::stringstream ss(s);
     string word;
-    while (!ss.eof()) {
+    while (!ss.eof())
+    {
         getline(ss, word, del);
         res.push_back(word);
     }
@@ -68,7 +69,8 @@ void printMap(const map<string, int>& m){
     std::cout << "}" << std::endl;
 }
 
-int centerControlWithColor(char color, std::string fen) {
+int centerControlWithColor(char color, std::string fen) 
+{
     int center[4] = {
         Ox88.at("e4"),
         Ox88.at("e5"),
@@ -85,7 +87,8 @@ int centerControlWithColor(char color, std::string fen) {
 
     string res = sp[0];
 
-    for (int i = 1; i < sp.size(); i++) {
+    for (int i = 1; i < sp.size(); i++)
+    {
         res += " ";
         res += sp[i];
     }
@@ -93,7 +96,8 @@ int centerControlWithColor(char color, std::string fen) {
     ChessEngine c = ChessEngine(res);
     vector<Move> moves = c._moves();
 
-    for (Move move : moves) {
+    for (Move move : moves)
+    {
         int currPiecePos = move.from;
         for (int s : center) {
             if (c._attacked(color, currPiecePos, s)) {
@@ -118,9 +122,12 @@ int materialEval(string fen) {
     int numWhitePieces = 0;
     int numBlackPieces = 0;
     int turn;
-    if (split(fen)[1][0] == 'w') {
+    if (split(fen)[1][0] == 'w')
+    {
         turn = 1;
-    } else {
+    }
+    else
+    {
         turn = -1;
     }
     int whiteMaterialWeight = 0;
@@ -131,17 +138,23 @@ int materialEval(string fen) {
     vector<string> materials = split(split(fen)[0], '/');
 
     string allMaterial = "";
-    for (string material : materials) {
+    for (string material : materials)
+    {
         allMaterial += material;
     }
-    for (char c : allMaterial) {
-        if (isDigit(c)) {
+    for (char c : allMaterial)
+    {
+        if (isDigit(c))
+        {
             continue;
         }
-        if (isupper(c)) {
+        if (isupper(c))
+        {
             numWhitePieces += 1;
             whiteMaterialWeight += materialPoints[c];
-        } else {
+        }
+        else
+        {
             numBlackPieces += 1;
             blackMaterialWeight += materialPoints[c];
         }

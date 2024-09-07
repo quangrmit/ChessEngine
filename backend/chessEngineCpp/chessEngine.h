@@ -140,6 +140,10 @@ const string TERMINATION_MARKERS[4] = {"1-0", "0-1", "1/2-1/2", "*"};
 
 const map<char, int> SECOND_RANK = {{'b', RANK_7}, {'w', RANK_2}};
 
+const int blackPawn[8] = {16, 17, 18, 19, 20, 21, 22, 23};
+
+const int whitePawn[8] = {96, 97, 98, 99, 100, 101, 102, 103};
+
 struct Move
 {
     char color = '\0';
@@ -154,7 +158,6 @@ struct Move
     char promotion = '\0';
     // char flags;
     int flags;
-
 };
 
 // true and false are encoded as strings (eg. 'true' , 'false')
@@ -250,7 +253,7 @@ public:
 
     void _updateEnPassantSquare();
 
-    bool _attacked(char color,int from,  int square);
+    bool _attacked(char color, int from, int square);
 
     bool _attacked(char color, int square);
 
@@ -279,7 +282,6 @@ public:
     Move move(map<string, string> move, map<string, bool> config = {});
 
     Move move(vector<Move> moves, map<string, string> move, map<string, bool> config = {});
-
 
     void _push(Move move);
 
@@ -346,6 +348,8 @@ public:
     // map<vector<char>, bool> getCastlingRights(char color);
 
     // int moveNumber();
+
+    // int getPawnStructure(char color, int from);
 };
 
 #endif
