@@ -1,6 +1,8 @@
 #include "alpha_beta.h"
 
 #include "chess-library/include/chess.hpp"
+#include "extend_chess.hpp"
+
 
 using namespace chess;
 
@@ -42,7 +44,7 @@ int squareControl(string fen) {
         sqs[i] = i;
     }
 
-    Board board = Board(fen);
+    Extend_Board board = Extend_Board(fen);
     int count = 0;
 
     for (int i = 0; i < N; i ++){
@@ -59,7 +61,7 @@ int squareControl(string fen) {
 int centerControl(string fen) {
     vector<Square::underlying> center = {Square::underlying::SQ_E4, Square::underlying::SQ_E5, Square::underlying::SQ_D4, Square::underlying::SQ_D5};
 
-    Board board = Board(fen);
+    Extend_Board board = Extend_Board(fen);
 
     int count = 0;
 
@@ -112,7 +114,7 @@ int materialEval(string fen) {
 int eval(string fen) {
     int centerControlWeight = 1;
 
-    Board board = Board(fen);
+    Extend_Board board = Extend_Board(fen);
     std::pair<GameResultReason, GameResult> res = board.isGameOver();
     if (static_cast<int>(res.first) == 0 && static_cast<int>(res.second) == 1){
         return -1000;
@@ -149,7 +151,7 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
         };
         return obj;
     }
-    Board board = Board(position);
+    Extend_Board board = Extend_Board(position);
     Movelist moves;
     movegen::legalmoves(moves, board);
 
@@ -216,7 +218,7 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
 }
 
 string bestMove(string fen, int depth) {
-    Board board = Board(fen);
+    Extend_Board board = Extend_Board(fen);
 
     // Find best move
     // vector<Move> moves = c->_moves();
@@ -254,7 +256,7 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         };
         return obj;
     }
-    Board board = Board(position);
+    Extend_Board board = Extend_Board(position);
     Movelist moves;
     movegen::legalmoves(moves, board);
 
