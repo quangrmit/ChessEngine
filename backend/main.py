@@ -32,11 +32,20 @@ def move():
     # response.headers['Access-Control-Allow-Origin'] = '*'
     # return response
 
-    return {
-        'from': res[0:2],
-        'to':  res[2:4]
-    }
+    if len(res) == 4:
 
+        return {
+        'from': res[0:2],
+        'to':  res[2:4],
+        }
+    else:
+        print("its this case")
+        
+        return {
+        'from': res[0:2],
+        'to':  res[2:4],
+        'promotion' : res[4:5]
+        }
 @app.route('/api/engine/test', methods = ['POST', 'GET'])
 def test():
     # chess = Chessjs.Chess
