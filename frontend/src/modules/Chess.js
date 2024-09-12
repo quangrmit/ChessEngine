@@ -223,7 +223,7 @@ function isDigit(c) {
   return "0123456789".indexOf(c) !== -1;
 }
 // Converts a 0x88 square to algebraic notation.
-function algebraic(square) {
+export function algebraic(square) {
   const f = file(square);
   const r = rank(square);
   return "abcdefgh".substring(f, f + 1) + "87654321".substring(r, r + 1);
@@ -314,12 +314,12 @@ function validateFen(fen) {
     }
   }
   // 9th criterion: is en-passant square legal?
-  if (
-    (tokens[3][1] == "3" && tokens[1] == "w") ||
-    (tokens[3][1] == "6" && tokens[1] == "b")
-  ) {
-    return { ok: false, error: "Invalid FEN: illegal en-passant square" };
-  }
+  // if (
+  //   (tokens[3][1] == "3" && tokens[1] == "w") ||
+  //   (tokens[3][1] == "6" && tokens[1] == "b")
+  // ) {
+  //   return { ok: false, error: "Invalid FEN: illegal en-passant square" };
+  // }
   // 10th criterion: does chess position contain exact two kings?
   const kings = [
     { color: "white", regex: /K/g },
@@ -757,6 +757,7 @@ class Chess {
       !(square & 0x88) &&
       this._board[square]?.color === this._turn &&
       this._board[square]?.type === exports.PAWN;
+
     if (!attackers.some(canCapture)) {
       this._epSquare = EMPTY;
     }
@@ -806,9 +807,9 @@ class Chess {
     return false;
   }
   _isKingAttacked(color) {
-    // const square = this._kings[color];
-    // return square === -1 ? false : this._attacked(swapColor(color), square);
-    return false;
+    const square = this._kings[color];
+    return square === -1 ? false : this._attacked(swapColor(color), square);
+    // return false;
   }
   isAttacked(square, attackedBy) {
     return this._attacked(attackedBy, Ox88[square]);
@@ -1072,14 +1073,21 @@ class Chess {
       return moves;
     }
     // filter out illegal moves
+
+
+
+
+
     const legalMoves = [];
     for (let i = 0, len = moves.length; i < len; i++) {
       this._makeMove(moves[i]);
+
       if (!this._isKingAttacked(us)) {
         legalMoves.push(moves[i]);
       }
       this._undoMove();
     }
+
     return legalMoves;
   }
   move(move, { strict = false } = {}) {
@@ -1101,6 +1109,9 @@ class Chess {
       moveObj = this._moveFromSan(move, strict);
     } else if (typeof move === "object") {
       const moves = this._moves();
+
+      console.log("here is moves length")
+      console.log(moves.length)
       // convert the pretty move object to an ugly move object
       for (let i = 0, len = moves.length; i < len; i++) {
         if (

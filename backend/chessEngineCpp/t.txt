@@ -1,0 +1,4 @@
+_moves(): generate possible LEGAL moves
+move(): Make move
+move().after: Get position after making move
+_undoMove(): Undo move after making move

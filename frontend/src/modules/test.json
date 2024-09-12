@@ -1,0 +1,162 @@
+{
+    color: 'b',
+    from: 'e8',
+    to: 'd7',
+    piece: 'k',
+    captured: undefined,
+    flags: 1,
+    No: 1
+  }
+  {
+    color: 'b',
+    from: 'e8',
+    to: 'd8',
+    piece: 'k',
+    captured: 'r',
+    flags: 2,
+    No: 2
+  }
+  {
+    color: 'b',
+    from: 'g8',
+    to: 'h6',
+    piece: 'n',
+    captured: undefined,
+    flags: 1,
+    No: 3
+  }
+  {
+    color: 'b',
+    from: 'g8',
+    to: 'f6',
+    piece: 'n',
+    captured: undefined,
+    flags: 1,
+    No: 4
+  }
+  {
+    color: 'b',
+    from: 'a7',
+    to: 'a6',
+    piece: 'p',
+    captured: undefined,
+    flags: 1,
+    No: 5
+  }
+  {
+    color: 'b',
+    from: 'a7',
+    to: 'a5',
+    piece: 'p',
+    captured: undefined,
+    flags: 4,
+    No: 6
+  }
+  {
+    color: 'b',
+    from: 'b7',
+    to: 'b6',
+    piece: 'p',
+    captured: undefined,
+    flags: 1,
+    No: 7
+  }
+  {
+    color: 'b',
+    from: 'b7',
+    to: 'b5',
+    piece: 'p',
+    captured: undefined,
+    flags: 4,
+    No: 8
+  }
+  {
+    color: 'b',
+    from: 'c7',
+    to: 'c6',
+    piece: 'p',
+    captured: undefined,
+    flags: 1,
+    No: 9
+  }
+  {
+    color: 'b',
+    from: 'c7',
+    to: 'c5',
+    piece: 'p',
+    captured: undefined,
+    flags: 4,
+    No: 10
+  }
+  {
+    color: 'b',
+    from: 'e7',
+    to: 'e6',
+    piece: 'p',
+    captured: undefined,
+    flags: 1,
+    No: 11
+  }
+  {
+    color: 'b',
+    from: 'e7',
+    to: 'e5',
+    piece: 'p',
+    captured: undefined,
+    flags: 4,
+    No: 12
+  }
+  {
+    color: 'b',
+    from: 'f7',
+    to: 'f6',
+    piece: 'p',
+    captured: undefined,
+    flags: 1,
+    No: 13
+  }
+  {
+    color: 'b',
+    from: 'f7',
+    to: 'f5',
+    piece: 'p',
+    captured: undefined,
+    flags: 4,
+    No: 14
+  }
+  {
+    color: 'b',
+    from: 'g7',
+    to: 'g6',
+    piece: 'p',
+    captured: undefined,
+    flags: 1,
+    No: 15
+  }
+  {
+    color: 'b',
+    from: 'g7',
+    to: 'g5',
+    piece: 'p',
+    captured: undefined,
+    flags: 4,
+    No: 16
+  }
+  {
+    color: 'b',
+    from: 'h7',
+    to: 'h6',
+    piece: 'p',
+    captured: undefined,
+    flags: 1,
+    No: 17
+  }
+  {
+    color: 'b',
+    from: 'h7',
+    to: 'h5',
+    piece: 'p',
+    captured: undefined,
+    flags: 4,
+    No: 18
+  }
