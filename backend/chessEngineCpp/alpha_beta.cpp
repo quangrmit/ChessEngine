@@ -3,7 +3,6 @@
 #include "chess-library/include/chess.hpp"
 #include "extend_chess.hpp"
 
-
 using namespace chess;
 
 chess::Move chosen;
@@ -40,19 +39,19 @@ void printMap(const map<string, int>& m) {
 int squareControl(string fen) {
     const int N = 64;
     int sqs[N];
-    for (int i = 0; i < N; i ++){
+    for (int i = 0; i < N; i++) {
         sqs[i] = i;
     }
 
     Extend_Board board = Extend_Board(fen);
     int count = 0;
 
-    for (int i = 0; i < N; i ++){
-        if(board.isAttacked(sqs[i], Color::WHITE)){
-            count ++;
+    for (int i = 0; i < N; i++) {
+        if (board.isAttacked(sqs[i], Color::WHITE)) {
+            count++;
         }
         if (board.isAttacked(sqs[i], Color::BLACK)) {
-            count --;
+            count--;
         }
     }
     return count;
@@ -115,14 +114,15 @@ int eval(string fen) {
     int centerControlWeight = 1;
 
     Extend_Board board = Extend_Board(fen);
+
+    // Check if game is over
     std::pair<GameResultReason, GameResult> res = board.isGameOver();
-    if (static_cast<int>(res.first) == 0 && static_cast<int>(res.second) == 1){
+    if (static_cast<int>(res.first) == 0 && static_cast<int>(res.second) == 1) {
         return -1000;
     }
-    if (static_cast<int>(res.first) == 0 && static_cast<int>(res.second) == 0){
+    if (static_cast<int>(res.first) == 0 && static_cast<int>(res.second) == 0) {
         return 1000;
     }
-
 
     return 2 * materialEval(fen) + centerControl(fen) + squareControl(fen);
 }
@@ -154,6 +154,17 @@ map<string, variant<string, int, vector<std::any>>> alphaBetaPrunning(string pos
     Extend_Board board = Extend_Board(position);
     Movelist moves;
     movegen::legalmoves(moves, board);
+
+    // if (moves.size() == 0) {
+    //     vector<std::any> noChildren;
+    //     map<string, variant<string, int, vector<std::any>>> obj = {
+    //         {"fen", position},
+    //         {"eval", eval(position)},
+    //         {"children", noChildren},
+
+    //     };
+    //     return obj;
+    // }
 
     if (split(position).at(1) == "w") {
         int maxScore = -std::numeric_limits<int>::max();
@@ -260,6 +271,36 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
     Movelist moves;
     movegen::legalmoves(moves, board);
 
+    // Check if game is over
+    std::pair<GameResultReason, GameResult> res = board.isGameOver();
+    if (!(res.first == GameResultReason::NONE && res.second == GameResult::NONE)) {
+    }
+
+    if (static_cast<int>(res.first) == 0 && static_cast<int>(res.second) == 1) {
+        // Stop the search immediately
+        vector<std::any> noChildren;
+        map<string, variant<string, int, vector<std::any>>> obj = {
+            {"fen", position},
+            {"eval", eval(position)},
+            {"children", noChildren},
+
+        };
+
+        return obj;
+    }
+
+    if (moves.size() == 0) {
+        vector<std::any> noChildren;
+        int score = eval(position);
+        map<string, variant<string, int, vector<std::any>>> obj = {
+            {"fen", position},
+            {"eval", score},
+            {"children", noChildren},
+
+        };
+        return obj;
+    }
+
     if (split(position).at(1) == "w") {
         int maxScore = -std::numeric_limits<int>::max();
         // int count = 0;
@@ -295,6 +336,23 @@ map<string, variant<string, int, vector<std::any>>> minimax(string position, int
         for (int i = 0; i < moves.size(); i++) {
             const auto move = moves[i];
             board.makeMove(move);
+            std::pair<GameResultReason, GameResult> res = board.isGameOver();
+
+            if (static_cast<int>(res.first) == 0 && static_cast<int>(res.second) == 1) {
+                // Stop the search immediately
+                if (depth == primeDepth) {
+                    chosen = move;
+                }
+                vector<std::any> noChildren;
+                map<string, variant<string, int, vector<std::any>>> obj = {
+                    {"fen", position},
+                    {"eval", -1000},
+                    {"children", noChildren},
+
+                };
+                return obj;
+            }
+
             string newPostion = board.getFen();
             auto curr = minimax(newPostion, depth - 1, primeDepth, transTable, countNode);
             children.push_back(curr);

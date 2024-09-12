@@ -6,11 +6,13 @@ import React, { useEffect, useState } from "react";
 import WinDialog from "./WinDialog";
 import Sidebar from "./Sidebar";
 import {defaultPieces} from '../modules/pieces'
+import { pie } from "d3";
 
 
 
 
 export default function FogChessboard() {
+    const initFen = "rnbqkbnr/ppp1pppp/8/8/8/2P5/PP1PN1pP/RNBQKB1R w KQkq - 0 5"
     const [fen, setFen] = useState("start");
     const [game, setGame] = useState(new Chess());
     const [isWhiteTurn, setIsWhiteTurn] = useState(true);
@@ -22,7 +24,7 @@ export default function FogChessboard() {
     const [currentPlayBackIndex, setCurrentPlayBackIndex] = useState(0);
     const [moveFrom, setMoveFrom] = useState(null);
     const [optionSquares, setOptionSquares] = useState({});
-
+    
     // prettier-ignore
     const [whitePieceSquares, setWhitePieceSquare] = useState( new Set([
                 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
@@ -108,6 +110,7 @@ export default function FogChessboard() {
 
     useEffect(() => {
         // setOptionSquares(fogSquaresCssObj);
+        console.log(game.fen());
         setOptionSquares(fog(fogSquares));
     }, []);
 
@@ -119,7 +122,10 @@ export default function FogChessboard() {
             let response = await fetch(`${url}?fen=${game.fen()}`);
             response = await response.json()
             console.log(response);
-            onDrop(response.from, response.to);
+            // onDrop(response.from, response.to);
+            let {from, to, promotion} = response;
+            console.log("response", from, to, promotion);
+            onDrop(from, to, promotion);
         }
         if (!isWhiteTurn) {
             console.log("Black turn !!!");
@@ -174,13 +180,27 @@ export default function FogChessboard() {
         }
     }
 
-    function onDrop(sourceSquare, targetSquare) {
+    function onDrop(sourceSquare, targetSquare, piece) {
+            console.log("piece" + piece)
+        let promo = (piece == undefined) ? null : piece[piece.length - 1].toLowerCase();
+        console.log("promo" + promo);
 
-        const move = makeAMove({
-            from: sourceSquare,
-            to: targetSquare,
-        });
+        let move;
+        
+        if (promo){
+            move = makeAMove({
+                from: sourceSquare,
+                to: targetSquare,
+                promotion : promo
+            });
+        }else {
+            move = makeAMove({
+                from: sourceSquare,
+                to: targetSquare,
+            });
+        }
 
+  
 
         // illegal move
         if (move === null) return false;
@@ -274,7 +294,7 @@ export default function FogChessboard() {
             <div id="containerBoard">
                 <Clock isWhite={false} ticking={!isWhiteTurn} />
                 <Chessboard
-                    position={fen}
+                    position={game.fen()}
                     onPieceDrop={onDrop}
                     // onSquareClick={onSquareClick}
                     // customSquareStyles={{
@@ -291,7 +311,6 @@ export default function FogChessboard() {
 
                     // customPieces={defaultPieces}
                 />
-                ;
                 <Clock isWhite={true} ticking={isWhiteTurn} />
             </div>
             <Sidebar resetGame={resetGame} stepPlaybackMove={stepPlaybackMove}></Sidebar>

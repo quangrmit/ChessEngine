@@ -1119,6 +1119,7 @@ class Chess {
           move.to === algebraic(moves[i].to) &&
           (!("promotion" in moves[i]) || move.promotion === moves[i].promotion)
         ) {
+          console.log("Promotion here");
           moveObj = moves[i];
           break;
         }
