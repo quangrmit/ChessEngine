@@ -2,7 +2,7 @@
 
 ## Description
 
-A AI for chess game - can beat Chess.com bots up to 1000 elo
+An AI for chess game - can beat Chess.com bots up to 1000 elo
 <p align="center"><img src="screenshot.png"/></p>
 
 ## Techstack
