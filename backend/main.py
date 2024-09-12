@@ -14,7 +14,7 @@ def move():
     # data = request.get_json()
     print("Run C++ files")
 
-    res = subprocess.run(['.\\chessEngineCpp\\main.exe', request.args.get("fen")], capture_output=True).stdout.decode()
+    res = subprocess.run(['..\\backend\\chessEngineCpp\\main.exe', request.args.get("fen")], capture_output=True).stdout.decode()
     
     # res = subprocess.run(['C:\\Users\\Lenovo\\OneDrive\\desktop\\FogOfWar-AI\\backend\\chessEngineCpp\\main.exe', request.args.get("fen")], capture_output=True).stdout.decode()
 
